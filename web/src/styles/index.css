@@ -191,25 +191,73 @@ textarea {
 .admin-aside {
   display: flex;
   flex-direction: column;
-  background: var(--aside);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 120px),
+    var(--aside);
   transition: width 0.2s ease;
   overflow: hidden;
 }
 
 .brand {
-  flex: 0 0 64px;
   height: 64px;
-  padding: 0 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex: 0 0 auto;
+  padding-right: 10px;
 }
 
 .brand-text {
   min-width: 0;
+  color: var(--text);
+}
+
+.brand-text span {
+  color: var(--muted);
+}
+
+.module-head {
+  display: flex;
+  flex: 0 0 72px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 0 18px;
   color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.module-head strong {
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 17px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.module-kicker {
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 12px;
+}
+
+.module-head.is-collapsed {
+  align-items: center;
+  padding: 0 8px;
+}
+
+.module-head.is-collapsed .module-kicker {
+  display: none;
+}
+
+.module-head.is-collapsed strong {
+  max-width: 36px;
+  font-size: 13px;
+  text-align: center;
+  white-space: normal;
 }
 
 .aside-scroll {
   flex: 1;
+  padding: 10px 0;
 }
 
 .side-menu {
@@ -241,7 +289,8 @@ textarea {
   align-items: center;
   justify-content: space-between;
   height: 64px;
-  padding: 0 24px;
+  gap: 18px;
+  padding: 0 20px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
@@ -254,9 +303,52 @@ textarea {
   min-width: 0;
 }
 
+.header-left {
+  flex: 1;
+}
+
+.header-right {
+  flex: 0 0 auto;
+}
+
 .icon-button {
   width: 36px;
   height: 36px;
+}
+
+.top-menu-wrap {
+  flex: 1;
+  min-width: 240px;
+  overflow: hidden;
+}
+
+.top-menu.el-menu {
+  height: 64px;
+  border-bottom: none;
+}
+
+.top-menu.el-menu--horizontal > .el-menu-item {
+  height: 64px;
+  padding: 0 18px;
+  border-bottom-width: 3px;
+  color: #536273;
+  font-weight: 600;
+}
+
+.top-menu.el-menu--horizontal > .el-menu-item .el-icon {
+  margin-right: 7px;
+}
+
+.top-menu.el-menu--horizontal > .el-menu-item:not(.is-disabled):hover,
+.top-menu.el-menu--horizontal > .el-menu-item:not(.is-disabled):focus {
+  color: var(--brand);
+  background: var(--surface-soft);
+}
+
+.top-menu.el-menu--horizontal > .el-menu-item.is-active {
+  color: var(--brand);
+  background: #f3f8ff;
+  border-bottom-color: var(--brand);
 }
 
 .user-entry {
