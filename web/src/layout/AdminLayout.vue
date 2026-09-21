@@ -64,6 +64,17 @@
             <el-breadcrumb-item>{{ activeTopMenu?.menuName || '首页' }}</el-breadcrumb-item>
             <el-breadcrumb-item>{{ route.meta.title || '工作台' }}</el-breadcrumb-item>
           </el-breadcrumb>
+          <el-button
+            class="icon-button theme-toggle"
+            text
+            :title="isDark ? '切换到日间模式' : '切换到黑暗模式'"
+            @click="toggleTheme"
+          >
+            <el-icon :size="18">
+              <Sunny v-if="isDark" />
+              <Moon v-else />
+            </el-icon>
+          </el-button>
           <el-tag effect="plain" round>{{ userStore.roles.join(', ') || 'user' }}</el-tag>
           <el-dropdown @command="handleCommand">
             <button class="user-entry">
@@ -96,7 +107,9 @@ import {
   Fold,
   Grid,
   Menu as MenuIcon,
+  Moon,
   Setting,
+  Sunny,
   Tickets,
   User,
   UserFilled
@@ -110,6 +123,15 @@ const router = useRouter()
 const userStore = useUserStore()
 const collapsed = ref(false)
 const activeMenu = computed(() => route.path)
+
+const isDark = ref(localStorage.getItem('app-theme') === 'dark')
+document.documentElement.classList.toggle('dark', isDark.value)
+
+function toggleTheme() {
+  isDark.value = !isDark.value
+  document.documentElement.classList.toggle('dark', isDark.value)
+  localStorage.setItem('app-theme', isDark.value ? 'dark' : 'light')
+}
 const iconMap = {
   setting: Setting,
   user: User,
