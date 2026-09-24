@@ -12,12 +12,14 @@ import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@EnableConfigurationProperties(SqlLogProperties.class)
 @Intercepts({
         @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class}),
         @Signature(type = Executor.class, method = "query", args = {
@@ -30,8 +32,18 @@ import java.util.stream.Collectors;
 })
 public class SqlExecutionLogInterceptor implements Interceptor {
 
+    private final SqlLogProperties properties;
+
+    public SqlExecutionLogInterceptor(SqlLogProperties properties) {
+        this.properties = properties;
+    }
+
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
+        if ("off".equals(properties.getMode())) {
+            return invocation.proceed();
+        }
+
         long start = System.currentTimeMillis();
         MappedStatement mappedStatement = (MappedStatement) invocation.getArgs()[0];
         Object parameter = invocation.getArgs().length > 1 ? invocation.getArgs()[1] : null;
@@ -42,18 +54,17 @@ public class SqlExecutionLogInterceptor implements Interceptor {
         try {
             Object result = invocation.proceed();
             long cost = System.currentTimeMillis() - start;
-            System.out.printf("""
-
-                    [SQL执行监听]
-                    Mapper : %s
-                    SQL    : %s
-                    Params : %s
-                    Time   : %d ms
-                    Status : SUCCESS
-                    """, mappedStatement.getId(), sql, params, cost);
+            log(mappedStatement.getId(), sql, params, cost, "SUCCESS", null);
             return result;
         } catch (Throwable ex) {
             long cost = System.currentTimeMillis() - start;
+            log(mappedStatement.getId(), sql, params, cost, "FAILED", getRootMessage(ex));
+            throw ex;
+        }
+    }
+
+    private void log(String mapperId, String sql, String params, long cost, String status, String errorMsg) {
+        if ("detail".equals(properties.getMode())) {
             System.out.printf("""
 
                     [SQL执行监听]
@@ -61,9 +72,10 @@ public class SqlExecutionLogInterceptor implements Interceptor {
                     SQL    : %s
                     Params : %s
                     Time   : %d ms
-                    Status : FAILED - %s
-                    """, mappedStatement.getId(), sql, params, cost, getRootMessage(ex));
-            throw ex;
+                    Status : %s%s
+                    """, mapperId, sql, params, cost, status, errorMsg != null ? " - " + errorMsg : "");
+        } else {
+            System.out.printf("[SQL] %s | %d ms | %s%n", mapperId, cost, status);
         }
     }
 
