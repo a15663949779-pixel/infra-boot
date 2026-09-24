@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <springProperty scope="context" name="logging.level.root" source="logging.level.root" defaultValue="info"/>
+    <springProperty scope="context" name="logging.level.sql.monitor" source="logging.level.sql.monitor" defaultValue="info"/>
+    <springProperty scope="context" name="logging.level.com.example" source="logging.level.com.example" defaultValue="debug"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] [%X{reqId}] %-5level %logger{26} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- SQL 监听器：由 SqlExecutionLogInterceptor 输出，INFO 即可 -->
+    <logger name="sql.monitor" level="${logging.level.sql.monitor}" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- 业务代码 -->
+    <logger name="com.example" level="${logging.level.com.example}" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- 压制 MyBatis mapper 内部 SQL 日志，避免与 sql.monitor 拦截器重复 -->
+    <logger name="com.example.system.mapper" level="warn" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- 关闭 MyBatis 框架级日志 -->
+    <logger name="org.apache.ibatis" level="warn" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <root level="${logging.level.root}">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>
