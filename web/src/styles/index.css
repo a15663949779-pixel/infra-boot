@@ -35,6 +35,10 @@
   --input-focus-bg: #ffffff;
   --success: #00a870;
   --warning: #d9822b;
+  --tree-level-0-bg: #d4e4ff;
+  --tree-level-1-bg: #e8f0ff;
+  --tree-level-2-bg: #f0f4f8;
+  --tree-level-3-bg: #f8f9fa;
   /* Element Plus 主色与登录页蓝紫渐变统一 */
   --el-color-primary: #4a79f0;
   --el-color-primary-light-3: #7c9df5;
@@ -83,6 +87,10 @@ html.dark {
   --table-header-bg: #1e2639;
   --input-bg: rgba(255, 255, 255, 0.05);
   --input-focus-bg: #232c46;
+  --tree-level-0-bg: #1a2332;
+  --tree-level-1-bg: #1e2a3a;
+  --tree-level-2-bg: #222f3e;
+  --tree-level-3-bg: #263444;
   color-scheme: dark;
   color: var(--text);
   background: var(--app-bg);
@@ -132,47 +140,6 @@ textarea {
   font: inherit;
 }
 
-.login-page {
-  display: grid;
-  grid-template-columns: minmax(420px, 1.1fr) minmax(380px, 520px);
-  min-height: 100vh;
-  background: #eef2f8;
-}
-
-.login-visual {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 100vh;
-  padding: 56px;
-  color: #fff;
-  background:
-    linear-gradient(135deg, rgba(21, 27, 45, 0.96), rgba(18, 45, 62, 0.9)),
-    repeating-linear-gradient(90deg, transparent 0, transparent 68px, rgba(255, 255, 255, 0.05) 69px),
-    repeating-linear-gradient(0deg, transparent 0, transparent 68px, rgba(255, 255, 255, 0.04) 69px);
-  overflow: hidden;
-}
-
-.login-visual::after {
-  position: absolute;
-  right: -120px;
-  bottom: -120px;
-  width: 360px;
-  height: 360px;
-  content: "";
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 50%;
-}
-
-.login-brand,
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.login-mark,
 .brand-mark {
   display: grid;
   place-items: center;
@@ -183,97 +150,6 @@ textarea {
   background: linear-gradient(135deg, #417ff0, #8064df);
   border-radius: 12px;
   box-shadow: 0 8px 18px rgba(70, 105, 225, 0.28);
-}
-
-.login-brand strong,
-.brand-text strong {
-  display: block;
-  font-size: 18px;
-  letter-spacing: 0;
-}
-
-.login-brand span,
-.brand-text span {
-  display: block;
-  margin-top: 3px;
-  color: rgba(255, 255, 255, 0.68);
-  font-size: 12px;
-}
-
-.login-panel-copy {
-  position: relative;
-  z-index: 1;
-  max-width: 640px;
-}
-
-.login-panel-copy p {
-  margin: 0 0 16px;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 16px;
-}
-
-.login-panel-copy h1 {
-  margin: 0;
-  font-size: 52px;
-  line-height: 1.12;
-  letter-spacing: 0;
-}
-
-.metric-strip {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  max-width: 640px;
-}
-
-.metric-strip div {
-  padding: 18px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
-  backdrop-filter: blur(12px);
-}
-
-.metric-strip strong {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 20px;
-}
-
-.metric-strip span {
-  color: rgba(255, 255, 255, 0.68);
-  font-size: 13px;
-}
-
-.login-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  width: 100%;
-  max-width: 420px;
-  margin: 0 auto;
-  padding: 40px 28px;
-}
-
-.form-heading {
-  margin-bottom: 28px;
-}
-
-.form-heading h2 {
-  margin: 0 0 8px;
-  font-size: 28px;
-  letter-spacing: 0;
-}
-
-.form-heading span {
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.login-button {
-  width: 100%;
 }
 
 .admin-shell {
@@ -292,50 +168,31 @@ textarea {
   overflow: hidden;
 }
 
-.brand {
-  height: 64px;
-  flex: 0 0 auto;
-  padding-right: 10px;
-}
-
-.brand-text {
-  min-width: 0;
-  color: var(--text);
-}
-
-.brand-text span {
-  color: var(--muted);
-}
-
 .module-head {
   display: flex;
-  flex: 0 0 64px;
-  flex-direction: column;
-  justify-content: center;
-  gap: 3px;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 100px;
   min-width: 0;
   padding: 0 18px;
   color: var(--text);
-  border-bottom: 1px solid var(--aside-border);
 }
 
-.module-head strong {
-  overflow: hidden;
-  background: var(--grad-text);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  font-size: 17px;
-  font-weight: 700;
-  line-height: 1.2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.module-head .brand-text {
+  min-width: 0;
 }
 
-.module-kicker {
+.module-head .brand-text strong {
+  display: block;
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+.module-head .brand-text span {
+  display: block;
+  margin-top: 3px;
   color: var(--muted);
   font-size: 12px;
-  letter-spacing: 0.4px;
 }
 
 .module-head.is-collapsed {
@@ -343,20 +200,13 @@ textarea {
   padding: 0 8px;
 }
 
-.module-head.is-collapsed .module-kicker {
+.module-head.is-collapsed .brand-text {
   display: none;
-}
-
-.module-head.is-collapsed strong {
-  max-width: 36px;
-  font-size: 13px;
-  text-align: center;
-  white-space: normal;
 }
 
 .aside-scroll {
   flex: 1;
-  padding: 10px 0;
+  padding: 0;
 }
 
 .side-menu {
@@ -415,13 +265,19 @@ textarea {
 
 .admin-header {
   display: flex;
+  flex-direction: column;
+  height: auto;
+  padding: 0;
+  background: var(--surface);
+}
+
+.header-top {
+  display: flex;
   align-items: center;
   justify-content: space-between;
   height: 64px;
   gap: 18px;
   padding: 0 20px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
 }
 
 .header-left,
@@ -438,6 +294,107 @@ textarea {
 
 .header-right {
   flex: 0 0 auto;
+}
+
+/* =========================================================
+   标签页栏
+========================================================= */
+.tags-bar {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 12px;
+  background: var(--surface);
+  box-shadow: 0 -1px 0 0 var(--border);
+}
+
+.tags-scroll {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tags-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.tag-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 12px;
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 13px;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.tag-item:hover {
+  color: var(--text);
+  border-color: rgba(74, 121, 240, 0.3);
+}
+
+.tag-item.is-active {
+  color: #fff;
+  background: var(--brand-grad);
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(70, 105, 225, 0.2);
+}
+
+.tag-close {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  font-size: 14px;
+  line-height: 1;
+  border-radius: 50%;
+  opacity: 0.7;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.tag-item:not(.is-active) .tag-close:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.tag-item.is-active .tag-close:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.tags-context {
+  position: fixed;
+  z-index: 999;
+  min-width: 120px;
+  padding: 4px 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(40, 62, 105, 0.16);
+}
+
+.tags-context div {
+  padding: 8px 16px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.tags-context div:hover {
+  background: var(--surface-soft);
+  color: var(--brand);
 }
 
 .icon-button {
@@ -516,7 +473,7 @@ textarea {
 }
 
 .admin-main {
-  height: calc(100vh - 64px);
+  height: calc(100vh - 100px);
   padding: 24px;
   overflow: auto;
 }
@@ -709,23 +666,6 @@ textarea {
     overflow: auto;
   }
 
-  .login-page {
-    grid-template-columns: 1fr;
-  }
-
-  .login-visual {
-    min-height: 360px;
-    padding: 32px;
-  }
-
-  .login-panel-copy h1 {
-    font-size: 36px;
-  }
-
-  .login-card {
-    max-width: 520px;
-  }
-
   .overview-grid {
     grid-template-columns: repeat(2, minmax(160px, 1fr));
   }
@@ -738,12 +678,8 @@ textarea {
     height: 100vh;
   }
 
-  .admin-header {
+  .header-top {
     padding-left: 88px;
-  }
-
-  .header-right .el-tag {
-    display: none;
   }
 
   .admin-main {
@@ -755,8 +691,7 @@ textarea {
     flex-direction: column;
   }
 
-  .overview-grid,
-  .metric-strip {
+  .overview-grid {
     grid-template-columns: 1fr;
   }
 }

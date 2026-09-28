@@ -20,7 +20,6 @@ export const roleApi = {
 
 export const menuApi = {
   list: () => request.get('/system/menu'),
-  tree: () => request.get('/system/menu/tree'),
   detail: (id) => request.get(`/system/menu/${id}`),
   create: (data) => request.post('/system/menu', data),
   update: (data) => request.put('/system/menu', data),

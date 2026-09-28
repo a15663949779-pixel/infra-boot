@@ -21,5 +21,6 @@ public class SysUser extends BaseEntity {
     private String nickname;
     private String email;
     private String phone;
+    private Long avatar;
     private Integer status;
 }

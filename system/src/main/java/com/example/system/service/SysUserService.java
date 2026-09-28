@@ -1,6 +1,8 @@
 package com.example.system.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.system.domain.dto.PasswordUpdateDTO;
+import com.example.system.domain.dto.ProfileUpdateDTO;
 import com.example.system.domain.dto.UserSaveDTO;
 import com.example.system.domain.entity.SysUser;
 import com.example.system.domain.vo.UserInfoVO;
@@ -19,6 +21,10 @@ public interface SysUserService extends IService<SysUser> {
     List<Long> getRoleIds(Long userId);
 
     UserInfoVO getCurrentUserInfo();
+
+    void updateProfile(ProfileUpdateDTO dto);
+
+    void changePassword(PasswordUpdateDTO dto);
 
     void saveUser(UserSaveDTO dto);
 

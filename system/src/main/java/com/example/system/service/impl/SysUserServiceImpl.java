@@ -5,12 +5,17 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.common.exception.BusinessException;
 import com.example.common.security.LoginUser;
 import com.example.common.utils.SecurityUtils;
+import com.example.system.domain.dto.PasswordUpdateDTO;
+import com.example.system.domain.dto.ProfileUpdateDTO;
 import com.example.system.domain.dto.UserSaveDTO;
 import com.example.system.domain.entity.SysUser;
+import com.example.system.domain.entity.SysFile;
 import com.example.system.domain.entity.SysUserRole;
 import com.example.system.domain.vo.UserInfoVO;
+import com.example.system.mapper.SysFileMapper;
 import com.example.system.mapper.SysUserMapper;
 import com.example.system.mapper.SysUserRoleMapper;
+import com.example.system.service.SysFileService;
 import com.example.system.service.SysUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -27,6 +32,8 @@ import java.util.Set;
 public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> implements SysUserService {
 
     private final SysUserRoleMapper userRoleMapper;
+    private final SysFileMapper sysFileMapper;
+    private final SysFileService sysFileService;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -60,13 +67,73 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (loginUser == null) {
             throw new BusinessException(401, "未登录");
         }
+        SysUser user = getById(loginUser.getUserId());
+        if (user == null) {
+            throw new BusinessException(404, "用户不存在");
+        }
+        String avatarUrl = null;
+        if (user.getAvatar() != null) {
+            SysFile file = sysFileMapper.selectById(user.getAvatar());
+            if (file != null) {
+                avatarUrl = file.getFileUrl();
+            }
+        }
         return UserInfoVO.builder()
-                .userId(loginUser.getUserId())
-                .username(loginUser.getUsername())
-                .nickname(loginUser.getNickname())
+                .userId(user.getId())
+                .username(user.getUsername())
+                .nickname(user.getNickname())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .avatar(avatarUrl)
                 .roles(loginUser.getRoles())
                 .permissions(loginUser.getPermissions())
                 .build();
+    }
+
+    @Override
+    public void updateProfile(ProfileUpdateDTO dto) {
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        if (loginUser == null) {
+            throw new BusinessException(401, "未登录");
+        }
+        SysUser user = getById(loginUser.getUserId());
+        if (user == null) {
+            throw new BusinessException(404, "用户不存在");
+        }
+        if (dto.getNickname() != null) {
+            user.setNickname(dto.getNickname());
+        }
+        if (dto.getEmail() != null) {
+            user.setEmail(dto.getEmail());
+        }
+        if (dto.getPhone() != null) {
+            user.setPhone(dto.getPhone());
+        }
+        if (dto.getAvatar() != null) {
+            Long oldAvatarId = user.getAvatar();
+            user.setAvatar(dto.getAvatar());
+            if (oldAvatarId != null && !oldAvatarId.equals(dto.getAvatar())) {
+                sysFileService.deleteByIds(List.of(oldAvatarId));
+            }
+        }
+        updateById(user);
+    }
+
+    @Override
+    public void changePassword(PasswordUpdateDTO dto) {
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        if (loginUser == null) {
+            throw new BusinessException(401, "未登录");
+        }
+        SysUser user = getById(loginUser.getUserId());
+        if (user == null) {
+            throw new BusinessException(404, "用户不存在");
+        }
+        if (!passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
+            throw new BusinessException("旧密码不正确");
+        }
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        updateById(user);
     }
 
     @Override

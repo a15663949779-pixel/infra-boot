@@ -1,6 +1,8 @@
 package com.example.system.controller;
 
 import com.example.common.core.Result;
+import com.example.system.domain.dto.PasswordUpdateDTO;
+import com.example.system.domain.dto.ProfileUpdateDTO;
 import com.example.system.domain.dto.UserSaveDTO;
 import com.example.system.domain.entity.SysUser;
 import com.example.system.domain.vo.UserInfoVO;
@@ -31,6 +33,18 @@ public class SysUserController {
         return Result.success(userService.getCurrentUserInfo());
     }
 
+    @PutMapping("/profile")
+    public Result<Void> updateProfile(@RequestBody ProfileUpdateDTO dto) {
+        userService.updateProfile(dto);
+        return Result.success();
+    }
+
+    @PutMapping("/password")
+    public Result<Void> changePassword(@Valid @RequestBody PasswordUpdateDTO dto) {
+        userService.changePassword(dto);
+        return Result.success();
+    }
+
     @GetMapping
     @PreAuthorize("hasAuthority('system:user:list')")
     public Result<List<SysUser>> list() {
@@ -39,13 +53,13 @@ public class SysUserController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('system:user:query')")
-    public Result<SysUser> get(@PathVariable Long id) {
+    public Result<SysUser> get(@PathVariable("id") Long id) {
         return Result.success(userService.getById(id));
     }
 
     @GetMapping("/{id}/roles")
     @PreAuthorize("hasAuthority('system:user:query')")
-    public Result<List<Long>> roles(@PathVariable Long id) {
+    public Result<List<Long>> roles(@PathVariable("id") Long id) {
         return Result.success(userService.getRoleIds(id));
     }
 
@@ -65,7 +79,7 @@ public class SysUserController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('system:user:delete')")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@PathVariable("id") Long id) {
         userService.deleteUser(id);
         return Result.success();
     }

@@ -11,7 +11,8 @@ export const useUserStore = defineStore('user', {
   getters: {
     permissions: (state) => state.profile?.permissions || [],
     roles: (state) => state.profile?.roles || [],
-    nickname: (state) => state.profile?.nickname || state.profile?.username || '用户'
+    nickname: (state) => state.profile?.nickname || state.profile?.username || '用户',
+    avatar: (state) => state.profile?.avatar || ''
   },
   actions: {
     async loginByPassword(form) {

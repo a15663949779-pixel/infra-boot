@@ -9,7 +9,7 @@
     </div>
 
     <section class="content-section">
-      <el-table v-loading="loading" :data="menuTree" row-key="id" border default-expand-all>
+      <el-table v-loading="loading" :data="menuTree" row-key="id" border default-expand-all :row-class-name="rowClassName">
         <el-table-column prop="menuName" label="菜单名称" min-width="180" />
         <el-table-column prop="path" label="路由路径" min-width="150" show-overflow-tooltip />
         <el-table-column prop="component" label="组件路径" min-width="180" show-overflow-tooltip />
@@ -59,10 +59,10 @@
           <el-input v-model.trim="form.menuName" placeholder="请输入菜单名称" />
         </el-form-item>
         <el-form-item label="路由路径">
-          <el-input v-model.trim="form.path" placeholder="如 /system 或 user" />
+          <el-input v-model.trim="form.path" placeholder="如 /system 或 user" :disabled="form.id === 1" />
         </el-form-item>
         <el-form-item label="组件路径">
-          <el-input v-model.trim="form.component" placeholder="如 system/user/index" />
+          <el-input v-model.trim="form.component" placeholder="如 system/user/index" :disabled="form.id === 1" />
         </el-form-item>
         <el-form-item label="权限标识">
           <el-input v-model.trim="form.perms" placeholder="如 system:user:list" />
@@ -102,6 +102,17 @@ const menus = ref([])
 const formRef = ref()
 const form = reactive(defaultForm())
 const menuTree = computed(() => buildTreeFromFlat(menus.value))
+const levelMap = computed(() => {
+  const map = new Map()
+  function walk(nodes, level) {
+    for (const node of nodes) {
+      map.set(node.id, level)
+      if (node.children?.length) walk(node.children, level + 1)
+    }
+  }
+  walk(menuTree.value, 0)
+  return map
+})
 const dialogTitle = computed(() => (form.id ? '编辑菜单' : '新增菜单'))
 const parentOptions = computed(() => [{ id: 0, menuName: '根目录', children: menuTree.value }])
 
@@ -182,5 +193,29 @@ function menuTypeTag(type) {
   return type === 0 ? 'primary' : type === 1 ? 'success' : 'warning'
 }
 
+function rowClassName({ row }) {
+  const level = levelMap.value.get(row.id) ?? 0
+  return `menu-level-${level}`
+}
+
 onMounted(loadData)
 </script>
+
+<style scoped>
+:deep(.menu-level-0 > td) {
+  background-color: var(--tree-level-0-bg) !important;
+  font-weight: 600;
+}
+
+:deep(.menu-level-1 > td) {
+  background-color: var(--tree-level-1-bg) !important;
+}
+
+:deep(.menu-level-2 > td) {
+  background-color: var(--tree-level-2-bg) !important;
+}
+
+:deep(.menu-level-3 > td) {
+  background-color: var(--tree-level-3-bg) !important;
+}
+</style>

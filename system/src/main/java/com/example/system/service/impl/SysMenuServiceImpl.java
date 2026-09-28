@@ -69,12 +69,16 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateMenu(MenuSaveDTO dto) {
-        SysMenu menu = getById(dto.getId());
-        if (menu == null) {
+        SysMenu existing = getById(dto.getId());
+        if (existing == null) {
             throw new BusinessException("菜单不存在");
         }
-        BeanUtils.copyProperties(dto, menu);
-        updateById(menu);
+        BeanUtils.copyProperties(dto, existing);
+        if (Objects.equals(dto.getId(), 1L)) {
+            existing.setPath("/dashboard");
+            existing.setComponent("Layout");
+        }
+        updateById(existing);
     }
 
     @Override

@@ -33,13 +33,13 @@ public class SysRoleController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('system:role:query')")
-    public Result<SysRole> get(@PathVariable Long id) {
+    public Result<SysRole> get(@PathVariable("id") Long id) {
         return Result.success(roleService.getById(id));
     }
 
     @GetMapping("/{id}/menus")
     @PreAuthorize("hasAuthority('system:role:query')")
-    public Result<List<Long>> menus(@PathVariable Long id) {
+    public Result<List<Long>> menus(@PathVariable("id") Long id) {
         return Result.success(roleService.getMenuIds(id));
     }
 
@@ -59,7 +59,7 @@ public class SysRoleController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('system:role:delete')")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@PathVariable("id") Long id) {
         roleService.deleteRole(id);
         return Result.success();
     }

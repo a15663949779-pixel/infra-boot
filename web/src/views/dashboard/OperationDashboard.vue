@@ -3,7 +3,7 @@
     <div class="page-title">
       <div>
         <span>Dashboard</span>
-        <h1>{{ $route.meta.title || '工作台' }}</h1>
+        <h1>运营看板</h1>
       </div>
       <el-button type="primary" :icon="Refresh" @click="refresh">刷新上下文</el-button>
     </div>
@@ -15,9 +15,9 @@
         <p>{{ userStore.profile?.nickname || '-' }}</p>
       </section>
       <section class="stat-card">
-        <span>角色数量</span>
-        <strong>{{ userStore.roles.length }}</strong>
-        <p>{{ userStore.roles.join(', ') || '-' }}</p>
+        <span>角色</span>
+        <strong>{{ userStore.roles.join(', ') || '-' }}</strong>
+        <p>运营看板专属视图</p>
       </section>
       <section class="stat-card">
         <span>权限数量</span>
@@ -33,8 +33,8 @@
 
     <section class="content-section">
       <div class="section-head">
-        <h2>已加载菜单</h2>
-        <span>{{ menuCount }} 项</span>
+        <h2>运营数据概览</h2>
+        <span>{{ menuCount }} 项菜单</span>
       </div>
       <el-table :data="menuTree" row-key="id" :tree-props="{ children: 'children' }" border>
         <el-table-column prop="menuName" label="菜单名称" min-width="160" />

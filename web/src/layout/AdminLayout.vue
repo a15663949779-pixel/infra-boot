@@ -2,8 +2,11 @@
   <el-container class="admin-shell">
     <el-aside class="admin-aside" :width="collapsed ? '72px' : '240px'">
       <div class="module-head" :class="{ 'is-collapsed': collapsed }">
-        <span class="module-kicker">当前模块</span>
-        <strong>{{ activeTopMenu?.menuName || '工作台' }}</strong>
+        <div class="brand-mark">V</div>
+        <div class="brand-text">
+          <strong>Vibe Admin</strong>
+          <span>后台管理系统</span>
+        </div>
       </div>
       <el-scrollbar class="aside-scroll">
         <el-menu
@@ -13,82 +16,69 @@
           router
           unique-opened
         >
-          <template v-if="activeSideMenus.length">
-            <template v-for="menu in activeSideMenus" :key="menu.id">
-              <MenuItem :menu="menu" :parent-path="activeTopMenu?.fullPath || ''" />
-            </template>
+          <template v-for="menu in activeSideMenus" :key="menu.id">
+            <MenuItem :menu="menu" :parent-path="activeTopMenu?.fullPath || ''" />
           </template>
-          <el-menu-item v-else index="/dashboard" class="module-home-item">
-            <el-icon><DataBoard /></el-icon>
-            <template #title>工作台</template>
-          </el-menu-item>
         </el-menu>
       </el-scrollbar>
     </el-aside>
 
     <el-container>
       <el-header class="admin-header">
-        <div class="header-left">
-          <div class="brand">
-            <div class="brand-mark">V</div>
-            <div class="brand-text">
-              <strong>Vibe Admin</strong>
-              <span>后台管理系统</span>
+        <div class="header-top">
+          <div class="header-left">
+            <el-button class="icon-button" text @click="collapsed = !collapsed">
+              <el-icon :size="20">
+                <Fold v-if="!collapsed" />
+                <Expand v-else />
+              </el-icon>
+            </el-button>
+            <div class="top-menu-wrap">
+              <el-menu
+                :default-active="activeTopKey"
+                class="top-menu"
+                mode="horizontal"
+                ellipsis
+                @select="handleTopSelect"
+              >
+                <el-menu-item v-for="menu in topMenus" :key="menu.topKey" :index="menu.topKey">
+                  <el-icon>
+                    <component :is="menu.iconComponent" />
+                  </el-icon>
+                  <template #title>{{ menu.menuName }}</template>
+                </el-menu-item>
+              </el-menu>
             </div>
           </div>
-          <el-button class="icon-button" text @click="collapsed = !collapsed">
-            <el-icon :size="20">
-              <Fold v-if="!collapsed" />
-              <Expand v-else />
-            </el-icon>
-          </el-button>
-          <div class="top-menu-wrap">
-            <el-menu
-              :default-active="activeTopKey"
-              class="top-menu"
-              mode="horizontal"
-              ellipsis
-              @select="handleTopSelect"
+          <div class="header-right">
+            <el-button
+              class="icon-button theme-toggle"
+              text
+              :title="isDark ? '切换到日间模式' : '切换到黑暗模式'"
+              @click="toggleTheme"
             >
-              <el-menu-item v-for="menu in topMenus" :key="menu.topKey" :index="menu.topKey">
-                <el-icon>
-                  <component :is="menu.iconComponent" />
-                </el-icon>
-                <template #title>{{ menu.menuName }}</template>
-              </el-menu-item>
-            </el-menu>
+              <el-icon :size="18">
+                <Sunny v-if="isDark" />
+                <Moon v-else />
+              </el-icon>
+            </el-button>
+            <el-dropdown @command="handleCommand">
+              <button class="user-entry">
+                <el-avatar v-if="userStore.avatar" :size="28" :src="userStore.avatar" />
+                <span v-else class="user-letter">{{ userStore.nickname.slice(0, 1).toUpperCase() }}</span>
+                <strong>{{ userStore.nickname }}</strong>
+                <el-icon><ArrowDown /></el-icon>
+              </button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="profile">个人资料</el-dropdown-item>
+                  <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
           </div>
         </div>
-        <div class="header-right">
-          <el-breadcrumb separator="/">
-            <el-breadcrumb-item>{{ activeTopMenu?.menuName || '首页' }}</el-breadcrumb-item>
-            <el-breadcrumb-item>{{ route.meta.title || '工作台' }}</el-breadcrumb-item>
-          </el-breadcrumb>
-          <el-button
-            class="icon-button theme-toggle"
-            text
-            :title="isDark ? '切换到日间模式' : '切换到黑暗模式'"
-            @click="toggleTheme"
-          >
-            <el-icon :size="18">
-              <Sunny v-if="isDark" />
-              <Moon v-else />
-            </el-icon>
-          </el-button>
-          <el-tag effect="plain" round>{{ userStore.roles.join(', ') || 'user' }}</el-tag>
-          <el-dropdown @command="handleCommand">
-            <button class="user-entry">
-              <span>{{ userStore.nickname.slice(0, 1).toUpperCase() }}</span>
-              <strong>{{ userStore.nickname }}</strong>
-              <el-icon><ArrowDown /></el-icon>
-            </button>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item command="logout">退出登录</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </div>
+        <TagsView />
       </el-header>
       <el-main class="admin-main">
         <router-view />
@@ -117,6 +107,7 @@ import {
 import { useUserStore } from '../stores/user'
 import { normalizeMenuPath } from '../utils/menu'
 import MenuItem from './MenuItem.vue'
+import TagsView from './TagsView.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -138,38 +129,31 @@ const iconMap = {
   peoples: UserFilled,
   'tree-table': Grid,
   menu: MenuIcon,
-  role: Tickets
+  role: Tickets,
+  'data-board': DataBoard
 }
 
-const dashboardMenu = {
-  id: 'dashboard',
-  topKey: 'dashboard',
-  menuName: '工作台',
-  fullPath: '/dashboard',
-  iconComponent: DataBoard,
-  children: []
-}
-
-const topMenus = computed(() => [
-  dashboardMenu,
-  ...userStore.menus
+const topMenus = computed(() =>
+  userStore.menus
     .filter((menu) => isVisibleMenu(menu))
     .map((menu) => decorateTopMenu(menu))
-])
+)
 
 const activeTopMenu = computed(() => {
   const matched = topMenus.value.find((menu) => isRouteInMenu(route.path, menu))
   return matched || topMenus.value[0]
 })
 
-const activeTopKey = computed(() => activeTopMenu.value?.topKey || 'dashboard')
+const activeTopKey = computed(() => activeTopMenu.value?.topKey)
 const activeSideMenus = computed(() => {
   const menu = activeTopMenu.value
   return menu?.children?.filter((item) => isVisibleMenu(item)) || []
 })
 
 async function handleCommand(command) {
-  if (command === 'logout') {
+  if (command === 'profile') {
+    router.push('/profile')
+  } else if (command === 'logout') {
     await userStore.logoutCurrent()
     router.replace('/login')
   }

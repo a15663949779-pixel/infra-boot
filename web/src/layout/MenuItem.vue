@@ -76,6 +76,7 @@
 import { computed } from 'vue'
 
 import {
+  DataBoard,
   Grid,
   Menu as MenuIcon,
   Setting,
@@ -114,7 +115,8 @@ const iconMap = {
   peoples: UserFilled,
   'tree-table': Grid,
   menu: MenuIcon,
-  role: Tickets
+  role: Tickets,
+  'data-board': DataBoard
 }
 
 /* =========================================================

@@ -15,6 +15,7 @@ create table sys_user
     nickname    varchar(64)  null comment '昵称',
     email       varchar(128) null comment '邮箱',
     phone       varchar(32)  null comment '手机号',
+    avatar      bigint       null comment '头像文件ID(关联sys_file)',
     status      tinyint      not null default 1 comment '状态：1启用 0禁用',
     create_time datetime     not null default current_timestamp comment '创建时间',
     update_time datetime     not null default current_timestamp on update current_timestamp comment '更新时间',
@@ -76,10 +77,16 @@ values (1, '超级管理员', 'admin', 1, 1, 0);
 
 insert into sys_menu (id, parent_id, menu_name, path, component, perms, icon, menu_type, visible, sort, status, deleted)
 values
-    (1, 0, '系统管理', '/system', 'Layout', null, 'setting', 0, 1, 1, 1, 0),
-    (2, 1, '用户管理', 'user', 'system/user/index', 'system:user:list', 'user', 1, 1, 1, 1, 0),
-    (3, 1, '角色管理', 'role', 'system/role/index', 'system:role:list', 'peoples', 1, 1, 2, 1, 0),
-    (4, 1, '菜单管理', 'menu', 'system/menu/index', 'system:menu:list', 'tree-table', 1, 1, 3, 1, 0),
+    -- 一级目录：工作台
+    (1, 0, '工作台', '/dashboard', 'Layout', null, 'data-board', 0, 1, 0, 1, 0),
+    (6, 1, '管理看板', 'admin', 'dashboard/DashboardView', null, 'data-board', 1, 1, 0, 1, 0),
+    (7, 1, '运营看板', 'operation', 'dashboard/OperationDashboard', null, 'data-board', 1, 1, 1, 1, 0),
+
+    -- 一级目录：系统管理
+    (5, 0, '系统管理', '/system', 'Layout', null, 'setting', 0, 1, 1, 1, 0),
+    (2, 5, '用户管理', 'user', 'system/user/index', 'system:user:list', 'user', 1, 1, 1, 1, 0),
+    (3, 5, '角色管理', 'role', 'system/role/index', 'system:role:list', 'peoples', 1, 1, 2, 1, 0),
+    (4, 5, '菜单管理', 'menu', 'system/menu/index', 'system:menu:list', 'tree-table', 1, 1, 3, 1, 0),
     (101, 2, '用户查询', null, null, 'system:user:query', null, 2, 0, 1, 1, 0),
     (102, 2, '用户新增', null, null, 'system:user:add', null, 2, 0, 2, 1, 0),
     (103, 2, '用户修改', null, null, 'system:user:edit', null, 2, 0, 3, 1, 0),

@@ -39,7 +39,7 @@ public class SysMenuController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('system:menu:query')")
-    public Result<SysMenu> get(@PathVariable Long id) {
+    public Result<SysMenu> get(@PathVariable("id") Long id) {
         return Result.success(menuService.getById(id));
     }
 
@@ -59,7 +59,7 @@ public class SysMenuController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('system:menu:delete')")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@PathVariable("id") Long id) {
         menuService.deleteMenu(id);
         return Result.success();
     }

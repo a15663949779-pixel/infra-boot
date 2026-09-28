@@ -13,12 +13,13 @@ export function flattenVisibleMenus(menus, parentPath = '') {
   const result = []
   menus.forEach((menu) => {
     const fullPath = normalizeMenuPath(parentPath, menu)
-    const item = { ...menu, fullPath }
+    const { children, ...rest } = menu
+    const item = { ...rest, fullPath }
     if (menu.visible !== 0 && menu.menuType !== 2) {
       result.push(item)
     }
-    if (menu.children?.length) {
-      result.push(...flattenVisibleMenus(menu.children, fullPath))
+    if (children?.length) {
+      result.push(...flattenVisibleMenus(children, fullPath))
     }
   })
   return result
@@ -43,4 +44,26 @@ export function buildTreeFromFlat(list) {
     return nodes
   }
   return sortTree(roots)
+}
+
+export function addFullPathToTree(menus, parentPath = '') {
+  return menus.map((menu) => {
+    const fullPath = normalizeMenuPath(parentPath, menu)
+    const item = { ...menu, fullPath }
+    if (menu.children?.length) {
+      item.children = addFullPathToTree(menu.children, fullPath)
+    }
+    return item
+  })
+}
+
+export function countMenuItems(menus) {
+  let count = 0
+  menus.forEach((menu) => {
+    count++
+    if (menu.children?.length) {
+      count += countMenuItems(menu.children)
+    }
+  })
+  return count
 }
