@@ -6,6 +6,10 @@ server:
 spring:
   application:
     name: infra-boot
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/vibe_admin?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
@@ -35,6 +39,20 @@ mybatis-plus:
 app:
   sql-log:
     mode: summary
+
+file:
+  base-path: ./upload/
+  access-prefix: /profile/
+  max-size: 50MB
+  allowed-extensions:
+  remote:
+    enabled: false
+  cleanup:
+    enabled: true
+    orphan-cron: "0 0 3 1 * ?"
+    timeout-cron: "0 0 2 * * ?"
+    uploading-timeout-minutes: 60
+    exclude-recent-minutes: 30
 
 security:
   jwt:
