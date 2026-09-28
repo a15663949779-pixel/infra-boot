@@ -2,6 +2,7 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '../router'
 import { getToken, removeToken } from '../utils/auth'
+import { useUserStore } from '../stores/user'
 
 const service = axios.create({
   baseURL: '/api',
@@ -25,7 +26,8 @@ service.interceptors.response.use(
     if (body.code !== 200) {
       ElMessage.error(body.message || '请求失败')
       if (body.code === 401) {
-        removeToken()
+        const userStore = useUserStore()
+        userStore.reset()
         router.replace('/login')
       }
       return Promise.reject(new Error(body.message || '请求失败'))

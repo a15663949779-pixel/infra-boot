@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { getMenuTree, getProfile, login, logout } from '../api/auth'
 import { getToken, removeToken, setToken } from '../utils/auth'
+import { resetRoutes } from '../router'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -38,6 +39,7 @@ export const useUserStore = defineStore('user', {
       this.profile = null
       this.menus = []
       removeToken()
+      resetRoutes()
     }
   }
 })

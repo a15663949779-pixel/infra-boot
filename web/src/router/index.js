@@ -44,6 +44,15 @@ export function registerRoutes(menus) {
   addMenuRoutes(menus, '')
 }
 
+export function resetRoutes() {
+  routesRegistered = false
+  router.getRoutes().forEach((route) => {
+    if (route.name?.toString().startsWith('Menu')) {
+      router.removeRoute(route.name)
+    }
+  })
+}
+
 function addMenuRoutes(menus, parentPath) {
   for (const menu of menus) {
     if (menu.visible === 0 || menu.menuType === 2) continue
