@@ -17,6 +17,32 @@
         >&times;</span>
       </div>
     </div>
+    <div class="tags-search">
+      <el-input
+        v-model="searchKey"
+        placeholder="搜索菜单…"
+        clearable
+        size="small"
+        class="menu-search-input"
+        @input="onSearch"
+        @focus="onSearch"
+      >
+        <template #prefix>
+          <el-icon><Search /></el-icon>
+        </template>
+      </el-input>
+      <div v-if="searchResults.length" class="search-dropdown">
+        <div
+          v-for="item in searchResults"
+          :key="item.fullPath"
+          class="search-option"
+          :class="{ 'is-active': item.fullPath === route.path }"
+          @mousedown.prevent="selectMenu(item)"
+        >
+          <span class="search-option-title">{{ item.menuName }}</span>
+        </div>
+      </div>
+    </div>
     <div v-if="contextVisible" class="tags-context" :style="contextStyle" @click="contextVisible = false">
       <div @click="closeOthers">关闭其他</div>
       <div @click="closeAll">关闭全部</div>
@@ -25,8 +51,9 @@
 </template>
 
 <script setup>
-import { nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { Search } from '@element-plus/icons-vue'
 import { useTagsStore } from '../stores/tags'
 
 const route = useRoute()
@@ -36,6 +63,14 @@ const scrollRef = ref()
 const contextVisible = ref(false)
 const contextStyle = ref({})
 const contextTag = ref(null)
+const searchKey = ref('')
+const searchResults = ref([])
+
+const searchableRoutes = computed(() =>
+  router.getRoutes()
+    .filter((r) => r.meta?.title && r.path !== '/' && !r.path.includes(':'))
+    .map((r) => ({ menuName: r.meta.title, fullPath: r.path }))
+)
 
 watch(
   () => route.path,
@@ -98,5 +133,23 @@ function scrollToActive() {
       active.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
     }
   })
+}
+
+function onSearch() {
+  const key = searchKey.value.trim().toLowerCase()
+  if (!key) {
+    searchResults.value = []
+    return
+  }
+  searchResults.value = searchableRoutes.value.filter((r) =>
+    r.menuName.toLowerCase().includes(key)
+  )
+}
+
+function selectMenu(item) {
+  searchKey.value = ''
+  searchResults.value = []
+  tagsStore.addView({ path: item.fullPath, fullPath: item.fullPath, meta: { title: item.menuName } })
+  router.push(item.fullPath)
 }
 </script>
