@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { getMenuTree, getProfile, login, logout } from '../api/auth'
 import { getToken, removeToken, setToken } from '../utils/auth'
-import { resetRoutes } from '../router'
+import { resetRoutes, registerRoutes } from '../router'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -21,6 +21,7 @@ export const useUserStore = defineStore('user', {
       this.token = data.token
       setToken(data.token)
       await this.loadUserContext()
+      registerRoutes(this.menus)
     },
     async loadUserContext() {
       const [profile, menus] = await Promise.all([getProfile(), getMenuTree()])
