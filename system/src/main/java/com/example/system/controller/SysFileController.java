@@ -1,7 +1,9 @@
 package com.example.system.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.common.annotation.Log;
 import com.example.common.core.Result;
+import com.example.common.enums.BusinessType;
 import com.example.system.domain.dto.CleanupLogQueryDTO;
 import com.example.system.domain.dto.FileQueryDTO;
 import com.example.system.domain.vo.FileUploadVO;
@@ -51,6 +53,7 @@ public class SysFileController {
     }
 
     @DeleteMapping("/{fileIds}")
+    @Log(title = "文件管理", businessType = BusinessType.DELETE)
     public Result<Void> deleteByIds(@PathVariable("fileIds") List<Long> fileIds) {
         sysFileService.deleteByIds(fileIds);
         return Result.success();

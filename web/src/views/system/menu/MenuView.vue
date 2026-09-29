@@ -94,7 +94,10 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { menuApi } from '../../../api/system'
 import { buildTreeFromFlat } from '../../../utils/menu'
+import { useUserStore } from '../../../stores/user'
+import { resetRoutes, registerRoutes } from '../../../router'
 
+const userStore = useUserStore()
 const loading = ref(false)
 const saving = ref(false)
 const dialogVisible = ref(false)
@@ -173,6 +176,9 @@ async function submit() {
     ElMessage.success('保存成功')
     dialogVisible.value = false
     await loadData()
+    await userStore.loadUserContext()
+    resetRoutes()
+    registerRoutes(userStore.menus)
   } finally {
     saving.value = false
   }
@@ -183,6 +189,9 @@ async function remove(row) {
   await menuApi.remove(row.id)
   ElMessage.success('删除成功')
   await loadData()
+  await userStore.loadUserContext()
+  resetRoutes()
+  registerRoutes(userStore.menus)
 }
 
 function menuTypeLabel(type) {

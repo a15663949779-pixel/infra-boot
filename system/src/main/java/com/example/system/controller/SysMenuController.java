@@ -1,6 +1,8 @@
 package com.example.system.controller;
 
+import com.example.common.annotation.Log;
 import com.example.common.core.Result;
+import com.example.common.enums.BusinessType;
 import com.example.system.domain.dto.MenuSaveDTO;
 import com.example.system.domain.entity.SysMenu;
 import com.example.system.domain.vo.MenuTreeVO;
@@ -45,6 +47,7 @@ public class SysMenuController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('system:menu:add')")
+    @Log(title = "菜单管理", businessType = BusinessType.INSERT)
     public Result<Void> add(@Valid @RequestBody MenuSaveDTO dto) {
         menuService.saveMenu(dto);
         return Result.success();
@@ -52,6 +55,7 @@ public class SysMenuController {
 
     @PutMapping
     @PreAuthorize("hasAuthority('system:menu:edit')")
+    @Log(title = "菜单管理", businessType = BusinessType.UPDATE)
     public Result<Void> edit(@Valid @RequestBody MenuSaveDTO dto) {
         menuService.updateMenu(dto);
         return Result.success();
@@ -59,6 +63,7 @@ public class SysMenuController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('system:menu:delete')")
+    @Log(title = "菜单管理", businessType = BusinessType.DELETE)
     public Result<Void> delete(@PathVariable("id") Long id) {
         menuService.deleteMenu(id);
         return Result.success();

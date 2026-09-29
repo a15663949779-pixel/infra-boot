@@ -1,6 +1,8 @@
 package com.example.system.controller;
 
+import com.example.common.annotation.Log;
 import com.example.common.core.Result;
+import com.example.common.enums.BusinessType;
 import com.example.system.domain.dto.PasswordUpdateDTO;
 import com.example.system.domain.dto.ProfileUpdateDTO;
 import com.example.system.domain.dto.UserSaveDTO;
@@ -34,12 +36,14 @@ public class SysUserController {
     }
 
     @PutMapping("/profile")
+    @Log(title = "个人资料", businessType = BusinessType.UPDATE)
     public Result<Void> updateProfile(@RequestBody ProfileUpdateDTO dto) {
         userService.updateProfile(dto);
         return Result.success();
     }
 
     @PutMapping("/password")
+    @Log(title = "修改密码", businessType = BusinessType.UPDATE)
     public Result<Void> changePassword(@Valid @RequestBody PasswordUpdateDTO dto) {
         userService.changePassword(dto);
         return Result.success();
@@ -65,6 +69,7 @@ public class SysUserController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('system:user:add')")
+    @Log(title = "用户管理", businessType = BusinessType.INSERT)
     public Result<Void> add(@Valid @RequestBody UserSaveDTO dto) {
         userService.saveUser(dto);
         return Result.success();
@@ -72,6 +77,7 @@ public class SysUserController {
 
     @PutMapping
     @PreAuthorize("hasAuthority('system:user:edit')")
+    @Log(title = "用户管理", businessType = BusinessType.UPDATE)
     public Result<Void> edit(@Valid @RequestBody UserSaveDTO dto) {
         userService.updateUser(dto);
         return Result.success();
@@ -79,6 +85,7 @@ public class SysUserController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('system:user:delete')")
+    @Log(title = "用户管理", businessType = BusinessType.DELETE)
     public Result<Void> delete(@PathVariable("id") Long id) {
         userService.deleteUser(id);
         return Result.success();

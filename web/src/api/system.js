@@ -25,3 +25,9 @@ export const menuApi = {
   update: (data) => request.put('/system/menu', data),
   remove: (id) => request.delete(`/system/menu/${id}`)
 }
+
+export const operLogApi = {
+  list: (params) => request.get('/system/operlog/list', { params }),
+  remove: (ids) => request.delete(`/system/operlog/${ids}`),
+  clean: () => request.delete('/system/operlog/clean')
+}

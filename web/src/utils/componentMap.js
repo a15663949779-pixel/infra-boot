@@ -4,6 +4,7 @@ const componentMap = {
   'system/user/index': () => import('../views/system/user/UserView.vue'),
   'system/role/index': () => import('../views/system/role/RoleView.vue'),
   'system/menu/index': () => import('../views/system/menu/MenuView.vue'),
+  'system/operlog/index': () => import('../views/system/operlog/OperLogView.vue'),
 }
 
 export function resolveComponent(component) {
