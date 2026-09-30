@@ -17,9 +17,7 @@
         <el-table-column prop="phone" label="手机号" min-width="140" />
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'info'" effect="plain">
-              {{ row.status === 1 ? '启用' : '禁用' }}
-            </el-tag>
+            <dict-tag :options="dicts.sys_normal_disable" :value="row.status" />
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" min-width="170" />
@@ -73,6 +71,10 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { roleApi, userApi } from '../../../api/system'
+import { useDict } from '../../../hooks/useDict'
+import DictTag from '../../../components/DictTag/index.vue'
+
+const dicts = useDict('sys_normal_disable')
 
 const loading = ref(false)
 const saving = ref(false)

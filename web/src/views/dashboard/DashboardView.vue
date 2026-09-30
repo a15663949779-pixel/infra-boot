@@ -42,9 +42,7 @@
         <el-table-column prop="perms" label="权限标识" min-width="220" show-overflow-tooltip />
         <el-table-column prop="menuType" label="类型" width="100">
           <template #default="{ row }">
-            <el-tag :type="row.menuType === 0 ? 'primary' : 'success'" effect="plain">
-              {{ row.menuType === 0 ? '目录' : '菜单' }}
-            </el-tag>
+            <dict-tag :options="dicts.sys_menu_type" :value="row.menuType" />
           </template>
         </el-table-column>
       </el-table>
@@ -57,7 +55,10 @@ import { computed } from 'vue'
 import { Refresh } from '@element-plus/icons-vue'
 import { useUserStore } from '../../stores/user'
 import { addFullPathToTree, countMenuItems } from '../../utils/menu'
+import { useDict } from '../../hooks/useDict'
+import DictTag from '../../components/DictTag/index.vue'
 
+const dicts = useDict('sys_menu_type')
 const userStore = useUserStore()
 const menuTree = computed(() => addFullPathToTree(userStore.menus))
 const menuCount = computed(() => countMenuItems(userStore.menus))

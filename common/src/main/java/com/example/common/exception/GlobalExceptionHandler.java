@@ -55,6 +55,6 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     public Result<Void> handleException(Exception ex) {
         log.error("Unhandled exception", ex);
-        return Result.fail(ResultCode.ERROR.getCode(), ResultCode.ERROR.getMessage());
+        return Result.fail(ResultCode.ERROR.getMessage());
     }
 }

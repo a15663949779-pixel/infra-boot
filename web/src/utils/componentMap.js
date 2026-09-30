@@ -5,6 +5,7 @@ const componentMap = {
   'system/role/index': () => import('../views/system/role/RoleView.vue'),
   'system/menu/index': () => import('../views/system/menu/MenuView.vue'),
   'system/operlog/index': () => import('../views/system/operlog/OperLogView.vue'),
+  'system/dict/index': () => import('../views/system/dict/DictView.vue'),
 }
 
 export function resolveComponent(component) {

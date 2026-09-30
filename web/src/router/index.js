@@ -39,8 +39,7 @@ let routesRegistered = false
 const staticPaths = new Set(['profile'])
 
 export function registerRoutes(menus) {
-  if (routesRegistered) return
-  routesRegistered = true
+  resetRoutes()
   addMenuRoutes(menus, '')
 }
 
@@ -95,11 +94,12 @@ router.beforeEach(async (to) => {
     try {
       await userStore.loadUserContext()
       registerRoutes(userStore.menus)
-      if (to.path === '/' || to.path === '/dashboard') {
+      const originalPath = to.redirectedFrom?.fullPath || to.fullPath
+      if (originalPath === '/' || originalPath === '/dashboard') {
         const target = findDashboardChildPath(userStore.menus)
         if (target) return target
       }
-      return { ...to, replace: true }
+      return originalPath
     } catch (error) {
       userStore.reset()
       return `/login?redirect=${encodeURIComponent(to.fullPath)}`

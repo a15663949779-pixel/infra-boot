@@ -16,14 +16,12 @@
         <el-table-column prop="perms" label="权限标识" min-width="210" show-overflow-tooltip />
         <el-table-column prop="menuType" label="类型" width="100">
           <template #default="{ row }">
-            <el-tag :type="menuTypeTag(row.menuType)" effect="plain">{{ menuTypeLabel(row.menuType) }}</el-tag>
+            <dict-tag :options="dicts.sys_menu_type" :value="row.menuType" />
           </template>
         </el-table-column>
         <el-table-column prop="visible" label="显示" width="90">
           <template #default="{ row }">
-            <el-tag :type="row.visible === 1 ? 'success' : 'info'" effect="plain">
-              {{ row.visible === 1 ? '显示' : '隐藏' }}
-            </el-tag>
+            <dict-tag :options="dicts.sys_show_hide" :value="row.visible" />
           </template>
         </el-table-column>
         <el-table-column prop="sort" label="排序" width="90" />
@@ -50,9 +48,9 @@
         </el-form-item>
         <el-form-item label="菜单类型">
           <el-radio-group v-model="form.menuType">
-            <el-radio-button :label="0">目录</el-radio-button>
-            <el-radio-button :label="1">菜单</el-radio-button>
-            <el-radio-button :label="2">按钮</el-radio-button>
+            <el-radio-button v-for="item in dicts.sys_menu_type" :key="item.value" :label="Number(item.value)">
+              {{ item.label }}
+            </el-radio-button>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="菜单名称" prop="menuName">
@@ -96,6 +94,10 @@ import { menuApi } from '../../../api/system'
 import { buildTreeFromFlat } from '../../../utils/menu'
 import { useUserStore } from '../../../stores/user'
 import { resetRoutes, registerRoutes } from '../../../router'
+import { useDict } from '../../../hooks/useDict'
+import DictTag from '../../../components/DictTag/index.vue'
+
+const dicts = useDict('sys_menu_type', 'sys_show_hide')
 
 const userStore = useUserStore()
 const loading = ref(false)
@@ -192,14 +194,6 @@ async function remove(row) {
   await userStore.loadUserContext()
   resetRoutes()
   registerRoutes(userStore.menus)
-}
-
-function menuTypeLabel(type) {
-  return ['目录', '菜单', '按钮'][type] || '未知'
-}
-
-function menuTypeTag(type) {
-  return type === 0 ? 'primary' : type === 1 ? 'success' : 'warning'
 }
 
 function rowClassName({ row }) {

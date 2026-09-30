@@ -21,13 +21,12 @@
         </el-form-item>
         <el-form-item label="业务类型">
           <el-select v-model="queryParams.businessType" placeholder="全部" clearable style="width: 140px">
-            <el-option v-for="item in businessTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+            <el-option v-for="item in dicts.sys_oper_business_type" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="queryParams.status" placeholder="全部" clearable style="width: 120px">
-            <el-option label="成功" :value="1" />
-            <el-option label="失败" :value="0" />
+            <el-option v-for="item in dicts.sys_success_fail" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
         <el-form-item label="操作时间">
@@ -53,18 +52,14 @@
         <el-table-column prop="title" label="操作模块" min-width="120" show-overflow-tooltip />
         <el-table-column prop="businessType" label="业务类型" width="100">
           <template #default="{ row }">
-            <el-tag :type="businessTypeTagMap[row.businessType] || 'info'" effect="plain" size="small">
-              {{ businessTypeLabelMap[row.businessType] || row.businessType }}
-            </el-tag>
+            <dict-tag :options="dicts.sys_oper_business_type" :value="row.businessType" />
           </template>
         </el-table-column>
         <el-table-column prop="operName" label="操作人" width="120" />
         <el-table-column prop="operIp" label="IP" width="140" show-overflow-tooltip />
         <el-table-column prop="status" label="状态" width="80">
           <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'danger'" effect="plain" size="small">
-              {{ row.status === 1 ? '成功' : '失败' }}
-            </el-tag>
+            <dict-tag :options="dicts.sys_success_fail" :value="row.status" />
           </template>
         </el-table-column>
         <el-table-column prop="costTime" label="耗时(ms)" width="100" />
@@ -92,16 +87,16 @@
     <el-dialog v-model="detailVisible" title="日志详情" width="700px">
       <el-descriptions :column="2" border>
         <el-descriptions-item label="操作模块">{{ detail.title }}</el-descriptions-item>
-        <el-descriptions-item label="业务类型">{{ businessTypeLabelMap[detail.businessType] || detail.businessType }}</el-descriptions-item>
+        <el-descriptions-item label="业务类型">
+          <dict-tag :options="dicts.sys_oper_business_type" :value="detail.businessType" />
+        </el-descriptions-item>
         <el-descriptions-item label="请求方法">{{ detail.method }}</el-descriptions-item>
         <el-descriptions-item label="请求方式">{{ detail.requestMethod }}</el-descriptions-item>
         <el-descriptions-item label="操作人">{{ detail.operName }}</el-descriptions-item>
         <el-descriptions-item label="操作IP">{{ detail.operIp }}</el-descriptions-item>
         <el-descriptions-item label="请求URL" :span="2">{{ detail.operUrl }}</el-descriptions-item>
         <el-descriptions-item label="状态">
-          <el-tag :type="detail.status === 1 ? 'success' : 'danger'" effect="plain" size="small">
-            {{ detail.status === 1 ? '成功' : '失败' }}
-          </el-tag>
+          <dict-tag :options="dicts.sys_success_fail" :value="detail.status" />
         </el-descriptions-item>
         <el-descriptions-item label="耗时">{{ detail.costTime }} ms</el-descriptions-item>
         <el-descriptions-item label="操作时间" :span="2">{{ detail.operTime }}</el-descriptions-item>
@@ -123,32 +118,10 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Refresh, Delete } from '@element-plus/icons-vue'
 import { operLogApi } from '../../../api/system'
+import { useDict } from '../../../hooks/useDict'
+import DictTag from '../../../components/DictTag/index.vue'
 
-const businessTypeOptions = [
-  { value: 'INSERT', label: '新增' },
-  { value: 'UPDATE', label: '修改' },
-  { value: 'DELETE', label: '删除' },
-  { value: 'GRANT', label: '授权' },
-  { value: 'EXPORT', label: '导出' },
-  { value: 'IMPORT', label: '导入' },
-  { value: 'FORCE', label: '强退' },
-  { value: 'CLEAN', label: '清空' },
-  { value: 'OTHER', label: '其它' }
-]
-
-const businessTypeLabelMap = Object.fromEntries(businessTypeOptions.map(o => [o.value, o.label]))
-
-const businessTypeTagMap = {
-  INSERT: 'success',
-  UPDATE: 'warning',
-  DELETE: 'danger',
-  GRANT: '',
-  EXPORT: 'info',
-  IMPORT: 'info',
-  FORCE: 'danger',
-  CLEAN: 'danger',
-  OTHER: 'info'
-}
+const dicts = useDict('sys_oper_business_type', 'sys_success_fail')
 
 const loading = ref(false)
 const logList = ref([])

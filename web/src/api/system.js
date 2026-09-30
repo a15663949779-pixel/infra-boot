@@ -31,3 +31,21 @@ export const operLogApi = {
   remove: (ids) => request.delete(`/system/operlog/${ids}`),
   clean: () => request.delete('/system/operlog/clean')
 }
+
+export const dictTypeApi = {
+  list: (params) => request.get('/system/dict/type/list', { params }),
+  detail: (id) => request.get(`/system/dict/type/${id}`),
+  create: (data) => request.post('/system/dict/type', data),
+  update: (data) => request.put('/system/dict/type', data),
+  remove: (ids) => request.delete(`/system/dict/type/${ids}`),
+  clearCache: () => request.delete('/system/dict/type/clearCache')
+}
+
+export const dictDataApi = {
+  list: (params) => request.get('/system/dict/data/list', { params }),
+  getByType: (dictType) => request.get(`/system/dict/data/type/${dictType}`),
+  detail: (id) => request.get(`/system/dict/data/${id}`),
+  create: (data) => request.post('/system/dict/data', data),
+  update: (data) => request.put('/system/dict/data', data),
+  remove: (ids) => request.delete(`/system/dict/data/${ids}`)
+}
