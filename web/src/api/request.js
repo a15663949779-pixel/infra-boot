@@ -17,6 +17,9 @@ service.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`
     isTokenExpired = false
   }
+  if (config.url?.includes('/auth/login')) {
+    isTokenExpired = false
+  }
   return config
 })
 
