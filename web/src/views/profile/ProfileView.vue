@@ -1,99 +1,104 @@
 <template>
-  <div class="profile-page">
-    <el-card class="profile-card">
-      <template #header>
-        <div class="card-header">
-          <span>个人资料</span>
-        </div>
-      </template>
+  <div class="page">
+    <div class="page-title">
+      <div>
+        <span>Account</span>
+        <h1>个人资料</h1>
+      </div>
+    </div>
 
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-width="80px"
-        class="profile-form"
-      >
-        <el-form-item label="头像">
-          <div class="avatar-area">
-            <el-avatar :size="80" :src="form.avatarUrl || undefined">
+    <div class="profile-layout">
+      <section class="content-section profile-hero">
+        <div class="hero-avatar">
+          <div class="avatar-ring">
+            <el-avatar :size="88" :src="form.avatarUrl || undefined">
               {{ form.nickname?.slice(0, 1)?.toUpperCase() || 'U' }}
             </el-avatar>
-            <el-upload
-              class="avatar-uploader"
-              :show-file-list="false"
-              :before-upload="beforeAvatarUpload"
-              :http-request="handleAvatarUpload"
-              accept="image/png,image/jpeg,image/gif"
-            >
-              <el-button size="small" type="primary" :loading="avatarLoading">
-                {{ form.avatarUrl ? '更换头像' : '上传头像' }}
-              </el-button>
-            </el-upload>
           </div>
-        </el-form-item>
-
-        <el-form-item label="用户名">
-          <el-input :model-value="userStore.profile?.username" disabled />
-        </el-form-item>
-
-        <el-form-item label="昵称" prop="nickname">
-          <el-input v-model="form.nickname" placeholder="请输入昵称" />
-        </el-form-item>
-
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="form.email" placeholder="请输入邮箱" />
-        </el-form-item>
-
-        <el-form-item label="手机号" prop="phone">
-          <el-input v-model="form.phone" placeholder="请输入手机号" />
-        </el-form-item>
-
-        <el-form-item>
-          <el-button type="primary" :loading="saving" @click="handleSave">保存修改</el-button>
-          <el-button @click="resetForm">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-
-    <el-card class="profile-card">
-      <template #header>
-        <div class="card-header">
-          <span>修改密码</span>
+          <el-upload
+            class="avatar-upload"
+            :show-file-list="false"
+            :before-upload="beforeAvatarUpload"
+            :http-request="handleAvatarUpload"
+            accept="image/png,image/jpeg,image/gif"
+          >
+            <el-button size="small" type="primary" :loading="avatarLoading" round>
+              {{ form.avatarUrl ? '更换头像' : '上传头像' }}
+            </el-button>
+          </el-upload>
         </div>
-      </template>
+        <div class="hero-info">
+          <h2 class="hero-name">{{ form.nickname || userStore.profile?.username }}</h2>
+          <p class="hero-username">@{{ userStore.profile?.username }}</p>
+          <div class="hero-meta">
+            <span v-if="form.email">
+              <el-icon><Message /></el-icon>{{ form.email }}
+            </span>
+            <span v-if="form.phone">
+              <el-icon><Phone /></el-icon>{{ form.phone }}
+            </span>
+          </div>
+        </div>
+      </section>
 
-      <el-form
-        ref="pwdFormRef"
-        :model="pwdForm"
-        :rules="pwdRules"
-        label-width="100px"
-        class="profile-form"
-      >
-        <el-form-item label="旧密码" prop="oldPassword">
-          <el-input v-model="pwdForm.oldPassword" type="password" placeholder="请输入旧密码" show-password />
-        </el-form-item>
+      <div class="profile-columns">
+        <section class="content-section profile-form-section">
+          <div class="section-head">
+            <h2>
+              <el-icon><User /></el-icon>基本信息
+            </h2>
+          </div>
+          <el-form ref="formRef" :model="form" :rules="rules" label-width="80px" class="profile-form">
+            <el-form-item label="用户名">
+              <el-input :model-value="userStore.profile?.username" disabled />
+            </el-form-item>
+            <el-form-item label="昵称" prop="nickname">
+              <el-input v-model="form.nickname" placeholder="请输入昵称" />
+            </el-form-item>
+            <el-form-item label="邮箱" prop="email">
+              <el-input v-model="form.email" placeholder="请输入邮箱" />
+            </el-form-item>
+            <el-form-item label="手机号" prop="phone">
+              <el-input v-model="form.phone" placeholder="请输入手机号" />
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" :loading="saving" @click="handleSave" round>保存修改</el-button>
+              <el-button @click="resetForm" round>重置</el-button>
+            </el-form-item>
+          </el-form>
+        </section>
 
-        <el-form-item label="新密码" prop="newPassword">
-          <el-input v-model="pwdForm.newPassword" type="password" placeholder="请输入新密码（6-20位）" show-password />
-        </el-form-item>
-
-        <el-form-item label="确认新密码" prop="confirmPassword">
-          <el-input v-model="pwdForm.confirmPassword" type="password" placeholder="请再次输入新密码" show-password />
-        </el-form-item>
-
-        <el-form-item>
-          <el-button type="primary" :loading="pwdSaving" @click="handleChangePassword">修改密码</el-button>
-          <el-button @click="resetPwdForm">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
+        <section class="content-section profile-form-section">
+          <div class="section-head">
+            <h2>
+              <el-icon><Lock /></el-icon>修改密码
+            </h2>
+          </div>
+          <el-form ref="pwdFormRef" :model="pwdForm" :rules="pwdRules" label-width="100px" class="profile-form">
+            <el-form-item label="旧密码" prop="oldPassword">
+              <el-input v-model="pwdForm.oldPassword" type="password" placeholder="请输入旧密码" show-password />
+            </el-form-item>
+            <el-form-item label="新密码" prop="newPassword">
+              <el-input v-model="pwdForm.newPassword" type="password" placeholder="请输入新密码（6-20位）" show-password />
+            </el-form-item>
+            <el-form-item label="确认新密码" prop="confirmPassword">
+              <el-input v-model="pwdForm.confirmPassword" type="password" placeholder="请再次输入新密码" show-password />
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" :loading="pwdSaving" @click="handleChangePassword" round>修改密码</el-button>
+              <el-button @click="resetPwdForm" round>重置</el-button>
+            </el-form-item>
+          </el-form>
+        </section>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
+import { User, Lock, Message, Phone } from '@element-plus/icons-vue'
 import request from '../../api/request'
 import { updateProfile, changePassword } from '../../api/auth'
 import { useUserStore } from '../../stores/user'
@@ -239,23 +244,128 @@ async function handleChangePassword() {
 </script>
 
 <style scoped>
-.profile-page {
-  max-width: 600px;
-  margin: 0 auto;
+.profile-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
-.card-header {
-  font-weight: 600;
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 28px 32px;
+}
+
+.hero-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar-ring {
+  padding: 4px;
+  border-radius: 50%;
+  background: var(--brand-grad);
+  box-shadow: 0 8px 24px rgba(74, 121, 240, 0.2);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.avatar-ring:hover {
+  transform: scale(1.05);
+}
+
+.avatar-ring :deep(.el-avatar) {
+  background: var(--brand-grad);
+  font-size: 32px;
+  font-weight: 700;
+  border: 3px solid var(--surface);
+}
+
+.hero-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.hero-name {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-username {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 20px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.hero-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.hero-meta .el-icon {
+  color: var(--brand);
+}
+
+.profile-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.profile-form-section {
+  padding: 24px;
+}
+
+.profile-form-section .section-head {
+  margin-bottom: 20px;
+}
+
+.profile-form-section .section-head h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 16px;
 }
 
-.avatar-area {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+.profile-form-section .section-head .el-icon {
+  color: var(--brand);
+  font-size: 18px;
 }
 
-.avatar-uploader {
-  display: inline-block;
+.profile-form {
+  max-width: 400px;
+}
+
+@media (max-width: 960px) {
+  .profile-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-hero {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .hero-meta {
+    justify-content: center;
+  }
 }
 </style>

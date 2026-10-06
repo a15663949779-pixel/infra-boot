@@ -5,14 +5,21 @@
         <span>System</span>
         <h1>角色管理</h1>
       </div>
-      <el-button type="primary" :icon="Plus" @click="openCreate">新增角色</el-button>
+      <el-button type="primary" :icon="Plus" @click="openCreate" round>新增角色</el-button>
     </div>
 
     <section class="content-section">
-      <el-table v-loading="loading" :data="roles" border>
+      <el-table v-loading="loading" :data="roles">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="roleName" label="角色名称" min-width="160" />
-        <el-table-column prop="roleKey" label="角色标识" min-width="160" />
+        <el-table-column prop="roleName" label="角色名称" min-width="160">
+          <template #default="{ row }">
+            <div class="role-cell">
+              <span class="role-badge">{{ row.roleName?.charAt(0) }}</span>
+              <span class="role-name">{{ row.roleName }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="roleKey" label="角色标识" min-width="160" show-overflow-tooltip />
         <el-table-column prop="sort" label="排序" width="100" />
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
@@ -20,16 +27,20 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" min-width="170" />
-        <el-table-column label="操作" fixed="right" width="170">
+        <el-table-column label="操作" fixed="right" width="160">
           <template #default="{ row }">
-            <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
-            <el-button link type="danger" @click="remove(row)">删除</el-button>
+            <el-button link type="primary" @click="openEdit(row)">
+              <el-icon><Edit /></el-icon>编辑
+            </el-button>
+            <el-button link type="danger" @click="remove(row)">
+              <el-icon><Delete /></el-icon>删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
     </section>
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="680px">
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="680px" destroy-on-close>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="92px">
         <el-form-item label="角色名称" prop="roleName">
           <el-input v-model.trim="form.roleName" placeholder="请输入角色名称" />
@@ -57,8 +68,8 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="submit">保存</el-button>
+        <el-button @click="dialogVisible = false" round>取消</el-button>
+        <el-button type="primary" :loading="saving" @click="submit" round>保存</el-button>
       </template>
     </el-dialog>
   </div>
@@ -67,7 +78,7 @@
 <script setup>
 import { computed, nextTick, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { menuApi, roleApi } from '../../../api/system'
 import { buildTreeFromFlat } from '../../../utils/menu'
 import { useDict } from '../../../hooks/useDict'
@@ -159,3 +170,29 @@ async function remove(row) {
 
 onMounted(loadData)
 </script>
+
+<style scoped>
+.role-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.role-badge {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(74, 121, 240, 0.12), rgba(128, 100, 223, 0.08));
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.role-name {
+  font-weight: 500;
+}
+</style>

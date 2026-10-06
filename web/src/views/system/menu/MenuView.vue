@@ -5,11 +5,11 @@
         <span>System</span>
         <h1>菜单管理</h1>
       </div>
-      <el-button type="primary" :icon="Plus" @click="openCreate">新增菜单</el-button>
+      <el-button type="primary" :icon="Plus" @click="openCreate" round>新增菜单</el-button>
     </div>
 
     <section class="content-section">
-      <el-table v-loading="loading" :data="menuTree" row-key="id" border default-expand-all :row-class-name="rowClassName">
+      <el-table v-loading="loading" :data="menuTree" row-key="id" default-expand-all :row-class-name="rowClassName">
         <el-table-column prop="menuName" label="菜单名称" min-width="180" />
         <el-table-column prop="path" label="路由路径" min-width="150" show-overflow-tooltip />
         <el-table-column prop="component" label="组件路径" min-width="180" show-overflow-tooltip />
@@ -27,14 +27,18 @@
         <el-table-column prop="sort" label="排序" width="90" />
         <el-table-column label="操作" fixed="right" width="170">
           <template #default="{ row }">
-            <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
-            <el-button link type="danger" @click="remove(row)">删除</el-button>
+            <el-button link type="primary" @click="openEdit(row)">
+              <el-icon><Edit /></el-icon>编辑
+            </el-button>
+            <el-button link type="danger" @click="remove(row)">
+              <el-icon><Delete /></el-icon>删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
     </section>
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="700px">
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="700px" destroy-on-close>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="96px">
         <el-form-item label="上级菜单">
           <el-tree-select
@@ -79,8 +83,8 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="submit">保存</el-button>
+        <el-button @click="dialogVisible = false" round>取消</el-button>
+        <el-button type="primary" :loading="saving" @click="submit" round>保存</el-button>
       </template>
     </el-dialog>
   </div>
@@ -89,7 +93,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { menuApi } from '../../../api/system'
 import { buildTreeFromFlat } from '../../../utils/menu'
 import { useUserStore } from '../../../stores/user'

@@ -6,8 +6,8 @@
         <h1>字典管理</h1>
       </div>
       <div>
-        <el-button type="danger" plain @click="handleClearCache">刷新缓存</el-button>
-        <el-button type="primary" :icon="Plus" @click="openTypeDialog()">新增类型</el-button>
+        <el-button type="danger" plain @click="handleClearCache" round>刷新缓存</el-button>
+        <el-button type="primary" :icon="Plus" @click="openTypeDialog()" round>新增类型</el-button>
       </div>
     </div>
 
@@ -25,11 +25,11 @@
             <el-input v-model.trim="typeQuery.dictType" placeholder="字典类型" clearable style="width: 140px" @keyup.enter="searchTypes" />
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" :icon="Search" @click="searchTypes">搜索</el-button>
+            <el-button type="primary" :icon="Search" @click="searchTypes" round>搜索</el-button>
           </el-form-item>
         </el-form>
 
-        <el-table v-loading="typeLoading" :data="typeList" border highlight-current-row @current-change="handleTypeSelect">
+        <el-table v-loading="typeLoading" :data="typeList" highlight-current-row @current-change="handleTypeSelect">
           <el-table-column prop="dictName" label="名称" min-width="100" />
           <el-table-column prop="dictType" label="类型编码" min-width="130" show-overflow-tooltip />
           <el-table-column prop="status" label="状态" width="70">
@@ -39,10 +39,14 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="100" fixed="right">
+          <el-table-column label="操作" width="120" fixed="right">
             <template #default="{ row }">
-              <el-button link type="primary" @click.stop="openTypeDialog(row)">编辑</el-button>
-              <el-button link type="danger" @click.stop="removeType(row)">删除</el-button>
+              <el-button link type="primary" @click.stop="openTypeDialog(row)">
+                <el-icon><Edit /></el-icon>编辑
+              </el-button>
+              <el-button link type="danger" @click.stop="removeType(row)">
+                <el-icon><Delete /></el-icon>删除
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -69,7 +73,7 @@
             <el-tag size="small" type="info" effect="plain" style="margin-left: 8px">{{ selectedType.dictType }}</el-tag>
           </h3>
           <h3 v-else class="panel-title placeholder">请选择左侧字典类型</h3>
-          <el-button v-if="selectedType" type="primary" :icon="Plus" size="small" @click="openDataDialog()">新增数据</el-button>
+          <el-button v-if="selectedType" type="primary" :icon="Plus" size="small" @click="openDataDialog()" round>新增数据</el-button>
         </div>
 
         <template v-if="selectedType">
@@ -84,11 +88,11 @@
               </el-select>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" :icon="Search" @click="searchData">搜索</el-button>
+              <el-button type="primary" :icon="Search" @click="searchData" round>搜索</el-button>
             </el-form-item>
           </el-form>
 
-          <el-table v-loading="dataLoading" :data="dataList" border>
+          <el-table v-loading="dataLoading" :data="dataList">
             <el-table-column prop="dictLabel" label="标签" min-width="100" />
             <el-table-column prop="dictValue" label="键值" width="100" />
             <el-table-column prop="dictSort" label="排序" width="70" />
@@ -104,10 +108,14 @@
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="100" fixed="right">
+            <el-table-column label="操作" width="120" fixed="right">
               <template #default="{ row }">
-                <el-button link type="primary" @click="openDataDialog(row)">编辑</el-button>
-                <el-button link type="danger" @click="removeData(row)">删除</el-button>
+                <el-button link type="primary" @click="openDataDialog(row)">
+                  <el-icon><Edit /></el-icon>编辑
+                </el-button>
+                <el-button link type="danger" @click="removeData(row)">
+                  <el-icon><Delete /></el-icon>删除
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -130,7 +138,7 @@
     </div>
 
     <!-- Dict Type Dialog -->
-    <el-dialog v-model="typeDialogVisible" :title="typeForm.dictId ? '编辑字典类型' : '新增字典类型'" width="500px">
+    <el-dialog v-model="typeDialogVisible" :title="typeForm.dictId ? '编辑字典类型' : '新增字典类型'" width="500px" destroy-on-close>
       <el-form ref="typeFormRef" :model="typeForm" :rules="typeRules" label-width="96px">
         <el-form-item label="字典名称" prop="dictName">
           <el-input v-model.trim="typeForm.dictName" placeholder="如：用户性别" />
@@ -146,13 +154,13 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="typeDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="typeSaving" @click="submitType">保存</el-button>
+        <el-button @click="typeDialogVisible = false" round>取消</el-button>
+        <el-button type="primary" :loading="typeSaving" @click="submitType" round>保存</el-button>
       </template>
     </el-dialog>
 
     <!-- Dict Data Dialog -->
-    <el-dialog v-model="dataDialogVisible" :title="dataForm.dictCode ? '编辑字典数据' : '新增字典数据'" width="550px">
+    <el-dialog v-model="dataDialogVisible" :title="dataForm.dictCode ? '编辑字典数据' : '新增字典数据'" width="550px" destroy-on-close>
       <el-form ref="dataFormRef" :model="dataForm" :rules="dataRules" label-width="96px">
         <el-form-item label="字典标签" prop="dictLabel">
           <el-input v-model.trim="dataForm.dictLabel" placeholder="如：男" />
@@ -182,8 +190,8 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dataDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="dataSaving" @click="submitData">保存</el-button>
+        <el-button @click="dataDialogVisible = false" round>取消</el-button>
+        <el-button type="primary" :loading="dataSaving" @click="submitData" round>保存</el-button>
       </template>
     </el-dialog>
   </div>
@@ -192,7 +200,7 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search } from '@element-plus/icons-vue'
+import { Plus, Search, Edit, Delete } from '@element-plus/icons-vue'
 import { dictTypeApi, dictDataApi } from '../../../api/system'
 import { useDictStore } from '../../../stores/dict'
 

@@ -6,8 +6,8 @@
         <h1>操作日志</h1>
       </div>
       <div>
-        <el-button type="danger" :icon="Delete" :disabled="!selectedIds.length" @click="handleBatchDelete">删除选中</el-button>
-        <el-button type="danger" plain :icon="Delete" @click="handleClean">清空日志</el-button>
+        <el-button type="danger" :icon="Delete" :disabled="!selectedIds.length" @click="handleBatchDelete" round>删除选中</el-button>
+        <el-button type="danger" plain :icon="Delete" @click="handleClean" round>清空日志</el-button>
       </div>
     </div>
 
@@ -41,12 +41,12 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" :icon="Search" @click="handleQuery">搜索</el-button>
-          <el-button :icon="Refresh" @click="resetQuery">重置</el-button>
+          <el-button type="primary" :icon="Search" @click="handleQuery" round>搜索</el-button>
+          <el-button :icon="Refresh" @click="resetQuery" round>重置</el-button>
         </el-form-item>
       </el-form>
 
-      <el-table v-loading="loading" :data="logList" border @selection-change="handleSelectionChange">
+      <el-table v-loading="loading" :data="logList" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="50" />
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="title" label="操作模块" min-width="120" show-overflow-tooltip />
@@ -66,7 +66,9 @@
         <el-table-column prop="operTime" label="操作时间" width="170" />
         <el-table-column label="操作" fixed="right" width="100">
           <template #default="{ row }">
-            <el-button link type="primary" @click="handleDetail(row)">详情</el-button>
+            <el-button link type="primary" @click="handleDetail(row)">
+              <el-icon><View /></el-icon>详情
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -84,7 +86,7 @@
       </div>
     </section>
 
-    <el-dialog v-model="detailVisible" title="日志详情" width="700px">
+    <el-dialog v-model="detailVisible" title="日志详情" width="700px" destroy-on-close>
       <el-descriptions :column="2" border>
         <el-descriptions-item label="操作模块">{{ detail.title }}</el-descriptions-item>
         <el-descriptions-item label="业务类型">
@@ -109,6 +111,9 @@
         <el-divider content-position="left">错误信息</el-divider>
         <div class="detail-text-block error">{{ detail.errorMsg }}</div>
       </template>
+      <template #footer>
+        <el-button @click="detailVisible = false" round>关闭</el-button>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -116,7 +121,7 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Refresh, Delete } from '@element-plus/icons-vue'
+import { Search, Refresh, Delete, View } from '@element-plus/icons-vue'
 import { operLogApi } from '../../../api/system'
 import { useDict } from '../../../hooks/useDict'
 import DictTag from '../../../components/DictTag/index.vue'

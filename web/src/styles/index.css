@@ -574,9 +574,21 @@ textarea {
 .page {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
   max-width: 1500px;
   margin: 0 auto;
+  animation: pageEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .page-title,
@@ -588,16 +600,24 @@ textarea {
 }
 
 .page-title > div > span {
+  display: inline-block;
   color: var(--brand);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, rgba(74, 121, 240, 0.10), transparent);
+  padding: 3px 10px;
+  border-radius: 4px;
+  border-left: 3px solid var(--brand);
 }
 
 .page-title h1 {
-  margin: 4px 0 0;
-  font-size: 26px;
+  margin: 8px 0 0;
+  font-size: 24px;
   line-height: 1.2;
-  letter-spacing: 0;
+  letter-spacing: -0.3px;
+  font-weight: 700;
 }
 
 .overview-grid {
@@ -610,21 +630,39 @@ textarea {
 .content-section {
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: 0 10px 28px rgba(60, 88, 150, 0.05);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(60, 88, 150, 0.04);
   backdrop-filter: blur(8px);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .stat-card {
+  position: relative;
   min-height: 132px;
-  padding: 20px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  padding: 22px 24px;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--brand-grad);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .stat-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(74, 121, 240, 0.32);
-  box-shadow: 0 16px 36px rgba(70, 105, 225, 0.12);
+  transform: translateY(-4px);
+  border-color: rgba(74, 121, 240, 0.28);
+  box-shadow: 0 20px 40px rgba(70, 105, 225, 0.10);
+}
+
+.stat-card:hover::before {
+  opacity: 1;
 }
 
 .stat-card span,
@@ -655,7 +693,7 @@ textarea {
 }
 
 .content-section {
-  padding: 18px;
+  padding: 22px 24px;
 }
 
 .section-head {
@@ -684,11 +722,37 @@ textarea {
 }
 
 .el-table {
-  --el-table-border-color: var(--border);
+  --el-table-border-color: rgba(227, 233, 246, 0.6);
   --el-table-header-bg-color: var(--table-header-bg);
   --el-table-header-text-color: var(--menu-label);
   --el-table-bg-color: transparent;
   --el-table-tr-bg-color: transparent;
+  --el-table-row-hover-bg-color: rgba(74, 121, 240, 0.04);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+html.dark .el-table {
+  --el-table-border-color: rgba(42, 52, 82, 0.6);
+  --el-table-row-hover-bg-color: rgba(74, 121, 240, 0.08);
+}
+
+.el-table th.el-table__cell {
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+}
+
+.el-table .el-table__row {
+  transition: background-color 0.2s ease;
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+  background: rgba(248, 250, 254, 0.5);
+}
+
+html.dark .el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+  background: rgba(255, 255, 255, 0.02);
 }
 
 /* =========================================================
@@ -752,6 +816,130 @@ textarea {
 .el-dialog .el-form-item__label {
   color: var(--menu-label);
   font-weight: 600;
+}
+
+/* =========================================================
+   分页器
+========================================================= */
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 0 4px;
+}
+
+.pagination-wrapper .el-pagination {
+  --el-pagination-button-bg-color: transparent;
+  font-weight: 500;
+}
+
+.pagination-wrapper .el-pagination .btn-prev,
+.pagination-wrapper .el-pagination .btn-next,
+.pagination-wrapper .el-pagination .el-pager li {
+  border-radius: 8px;
+  min-width: 32px;
+  height: 32px;
+  line-height: 32px;
+  transition: all 0.2s ease;
+}
+
+.pagination-wrapper .el-pagination .el-pager li.is-active {
+  background: var(--brand-grad);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(70, 105, 225, 0.2);
+}
+
+/* =========================================================
+   内联搜索表单
+========================================================= */
+.content-section .el-form--inline {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.content-section .el-form--inline .el-form-item {
+  margin-right: 12px;
+  margin-bottom: 0;
+}
+
+.content-section .el-form--inline .el-form-item__label {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.content-section .el-form--inline .el-input,
+.content-section .el-form--inline .el-select {
+  width: 160px;
+}
+
+.content-section .el-form--inline .el-input__wrapper,
+.content-section .el-form--inline .el-select__wrapper {
+  border-radius: 8px;
+  background: var(--input-bg);
+  box-shadow: none;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.content-section .el-form--inline .el-input__wrapper:hover,
+.content-section .el-form--inline .el-select__wrapper:hover {
+  border-color: rgba(74, 121, 240, 0.3);
+}
+
+.content-section .el-form--inline .el-input__wrapper.is-focus,
+.content-section .el-form--inline .el-select__wrapper.is-focused {
+  background: var(--input-focus-bg);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(74, 121, 240, 0.08);
+}
+
+/* =========================================================
+   全局输入框圆角统一
+========================================================= */
+.el-input__wrapper {
+  border-radius: 10px;
+}
+
+.el-select__wrapper {
+  border-radius: 10px;
+}
+
+/* =========================================================
+   滚动条美化
+========================================================= */
+.admin-main::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.admin-main::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-main::-webkit-scrollbar-thumb {
+  background: rgba(150, 170, 200, 0.25);
+  border-radius: 3px;
+}
+
+.admin-main::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 170, 200, 0.4);
+}
+
+html.dark .admin-main::-webkit-scrollbar-thumb {
+  background: rgba(100, 120, 160, 0.3);
+}
+
+html.dark .admin-main::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 120, 160, 0.5);
+}
+
+/* =========================================================
+   操作按钮组
+========================================================= */
+.page-title > div:last-child {
+  display: flex;
+  gap: 8px;
 }
 
 @media (max-width: 960px) {
