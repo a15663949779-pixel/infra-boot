@@ -1,10 +1,12 @@
 package com.example.system.controller;
 
 import com.example.common.annotation.Log;
+import com.example.common.core.PageResult;
 import com.example.common.core.Result;
 import com.example.common.enums.BusinessType;
 import com.example.system.domain.dto.PasswordUpdateDTO;
 import com.example.system.domain.dto.ProfileUpdateDTO;
+import com.example.system.domain.dto.UserQueryDTO;
 import com.example.system.domain.dto.UserSaveDTO;
 import com.example.system.domain.entity.SysUser;
 import com.example.system.domain.vo.UserInfoVO;
@@ -51,8 +53,8 @@ public class SysUserController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('system:user:list')")
-    public Result<List<SysUser>> list() {
-        return Result.success(userService.list());
+    public Result<PageResult<SysUser>> list(UserQueryDTO query) {
+        return Result.success(userService.selectUserPage(query));
     }
 
     @GetMapping("/{id}")

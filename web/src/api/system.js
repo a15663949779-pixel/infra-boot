@@ -1,7 +1,7 @@
 import request from './request'
 
 export const userApi = {
-  list: () => request.get('/system/user'),
+  list: (params) => request.get('/system/user', { params }),
   detail: (id) => request.get(`/system/user/${id}`),
   roles: (id) => request.get(`/system/user/${id}/roles`),
   create: (data) => request.post('/system/user', data),
@@ -10,7 +10,8 @@ export const userApi = {
 }
 
 export const roleApi = {
-  list: () => request.get('/system/role'),
+  list: (params) => request.get('/system/role', { params }),
+  all: () => request.get('/system/role/all'),
   detail: (id) => request.get(`/system/role/${id}`),
   menus: (id) => request.get(`/system/role/${id}/menus`),
   create: (data) => request.post('/system/role', data),

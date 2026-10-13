@@ -1,12 +1,15 @@
 package com.example.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.common.core.PageResult;
 import com.example.common.exception.BusinessException;
 import com.example.common.security.LoginUser;
 import com.example.common.utils.SecurityUtils;
 import com.example.system.domain.dto.PasswordUpdateDTO;
 import com.example.system.domain.dto.ProfileUpdateDTO;
+import com.example.system.domain.dto.UserQueryDTO;
 import com.example.system.domain.dto.UserSaveDTO;
 import com.example.system.domain.entity.SysUser;
 import com.example.system.domain.entity.SysFile;
@@ -134,6 +137,19 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         }
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         updateById(user);
+    }
+
+    @Override
+    public PageResult<SysUser> selectUserPage(UserQueryDTO query) {
+        IPage<SysUser> page = query.toPage();
+
+        LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<SysUser>()
+                .like(StringUtils.hasText(query.getUsername()), SysUser::getUsername, query.getUsername())
+                .like(StringUtils.hasText(query.getPhone()), SysUser::getPhone, query.getPhone())
+                .eq(query.getStatus() != null, SysUser::getStatus, query.getStatus())
+                .orderByDesc(SysUser::getId);
+
+        return PageResult.build(page(page, wrapper));
     }
 
     @Override

@@ -9,6 +9,24 @@
     </div>
 
     <section class="content-section">
+      <el-form :model="queryParams" inline>
+        <el-form-item label="角色名称">
+          <el-input v-model.trim="queryParams.roleName" placeholder="请输入角色名称" clearable style="width: 160px" @keyup.enter="handleQuery" />
+        </el-form-item>
+        <el-form-item label="角色标识">
+          <el-input v-model.trim="queryParams.roleKey" placeholder="请输入角色标识" clearable style="width: 160px" @keyup.enter="handleQuery" />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="queryParams.status" placeholder="全部" clearable style="width: 120px">
+            <el-option v-for="item in dicts.sys_normal_disable" :key="item.value" :label="item.label" :value="Number(item.value)" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :icon="Search" @click="handleQuery" round>搜索</el-button>
+          <el-button :icon="Refresh" @click="resetQuery" round>重置</el-button>
+        </el-form-item>
+      </el-form>
+
       <el-table v-loading="loading" :data="roles">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="roleName" label="角色名称" min-width="160">
@@ -38,6 +56,14 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <Pagination
+        v-show="total > 0"
+        v-model:pageNum="queryParams.pageNum"
+        v-model:pageSize="queryParams.pageSize"
+        :total="total"
+        @pagination="loadData"
+      />
     </section>
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="680px" destroy-on-close>
@@ -78,11 +104,12 @@
 <script setup>
 import { computed, nextTick, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Edit, Delete } from '@element-plus/icons-vue'
+import { Plus, Search, Refresh, Edit, Delete } from '@element-plus/icons-vue'
 import { menuApi, roleApi } from '../../../api/system'
 import { buildTreeFromFlat } from '../../../utils/menu'
 import { useDict } from '../../../hooks/useDict'
 import DictTag from '../../../components/DictTag/index.vue'
+import Pagination from '../../../components/Pagination/index.vue'
 
 const dicts = useDict('sys_normal_disable')
 
@@ -90,12 +117,21 @@ const loading = ref(false)
 const saving = ref(false)
 const dialogVisible = ref(false)
 const roles = ref([])
+const total = ref(0)
 const menus = ref([])
 const treeRef = ref()
 const formRef = ref()
 const form = reactive(defaultForm())
 const menuTree = computed(() => buildTreeFromFlat(menus.value))
 const dialogTitle = computed(() => (form.id ? '编辑角色' : '新增角色'))
+
+const queryParams = reactive({
+  pageNum: 1,
+  pageSize: 20,
+  roleName: '',
+  roleKey: '',
+  status: undefined
+})
 
 const rules = {
   roleName: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
@@ -120,12 +156,29 @@ function assignForm(data) {
 async function loadData() {
   loading.value = true
   try {
-    const [roleList, menuList] = await Promise.all([roleApi.list(), menuApi.list()])
-    roles.value = roleList || []
-    menus.value = menuList || []
+    const res = await roleApi.list(queryParams)
+    roles.value = res.list || []
+    total.value = res.total || 0
   } finally {
     loading.value = false
   }
+}
+
+async function loadMenus() {
+  menus.value = await menuApi.list() || []
+}
+
+function handleQuery() {
+  queryParams.pageNum = 1
+  loadData()
+}
+
+function resetQuery() {
+  queryParams.roleName = ''
+  queryParams.roleKey = ''
+  queryParams.status = undefined
+  queryParams.pageNum = 1
+  loadData()
 }
 
 function openCreate() {
@@ -168,7 +221,10 @@ async function remove(row) {
   await loadData()
 }
 
-onMounted(loadData)
+onMounted(() => {
+  loadMenus()
+  loadData()
+})
 </script>
 
 <style scoped>

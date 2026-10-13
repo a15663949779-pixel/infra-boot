@@ -1,8 +1,11 @@
 package com.example.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.common.core.PageResult;
 import com.example.common.exception.BusinessException;
+import com.example.system.domain.dto.RoleQueryDTO;
 import com.example.system.domain.dto.RoleSaveDTO;
 import com.example.system.domain.entity.SysRole;
 import com.example.system.domain.entity.SysRoleMenu;
@@ -15,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -31,6 +35,19 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
                 .stream()
                 .map(SysRoleMenu::getMenuId)
                 .toList();
+    }
+
+    @Override
+    public PageResult<SysRole> selectRolePage(RoleQueryDTO query) {
+        IPage<SysRole> page = query.toPage();
+        LambdaQueryWrapper<SysRole> wrapper = new LambdaQueryWrapper<SysRole>()
+                .like(StringUtils.hasText(query.getRoleName()), SysRole::getRoleName, query.getRoleName())
+                .like(StringUtils.hasText(query.getRoleKey()), SysRole::getRoleKey, query.getRoleKey())
+                .eq(query.getStatus() != null, SysRole::getStatus, query.getStatus())
+                .orderByAsc(SysRole::getSort)
+                .orderByDesc(SysRole::getId);
+
+        return PageResult.build(page(page, wrapper));
     }
 
     @Override

@@ -1,8 +1,10 @@
 package com.example.system.controller;
 
 import com.example.common.annotation.Log;
+import com.example.common.core.PageResult;
 import com.example.common.core.Result;
 import com.example.common.enums.BusinessType;
+import com.example.system.domain.dto.RoleQueryDTO;
 import com.example.system.domain.dto.RoleSaveDTO;
 import com.example.system.domain.entity.SysRole;
 import com.example.system.service.SysRoleService;
@@ -29,7 +31,13 @@ public class SysRoleController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('system:role:list')")
-    public Result<List<SysRole>> list() {
+    public Result<PageResult<SysRole>> list(RoleQueryDTO query) {
+        return Result.success(roleService.selectRolePage(query));
+    }
+
+    @GetMapping("/all")
+    @PreAuthorize("hasAuthority('system:role:list')")
+    public Result<List<SysRole>> all() {
         return Result.success(roleService.list());
     }
 
