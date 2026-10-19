@@ -1,12 +1,21 @@
 <template>
   <el-container class="admin-shell">
-    <el-aside class="admin-aside" :width="collapsed ? '72px' : '240px'">
+    <button v-if="isCompact && !collapsed" class="aside-backdrop" aria-label="收起导航" @click="collapsed = true"></button>
+    <el-aside class="admin-aside" :class="{ 'is-collapsed': collapsed }" :width="collapsed ? '80px' : '252px'">
       <div class="module-head" :class="{ 'is-collapsed': collapsed }">
-        <div class="brand-mark">V</div>
-        <div class="brand-text">
-          <strong>Vibe Admin</strong>
-          <span>后台管理系统</span>
+        <div class="nav-brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none">
+            <path d="M7 7h7v18H7zM18 7h7v7h-7zM18 18h7v7h-7z" fill="currentColor" />
+          </svg>
         </div>
+        <div class="brand-text">
+          <strong>InfraBoot<span class="brand-period">.</span></strong>
+          <span>管理控制台</span>
+        </div>
+      </div>
+      <div class="aside-section-label" :class="{ 'is-collapsed': collapsed }">
+        <span>{{ activeTopMenu?.menuName || '工作空间' }}</span>
+        <span class="aside-section-count">{{ activeSideMenus.length }}</span>
       </div>
       <el-scrollbar class="aside-scroll">
         <el-menu
@@ -15,26 +24,34 @@
           class="side-menu"
           router
           unique-opened
+          @select="onSideSelect"
         >
           <template v-for="menu in activeSideMenus" :key="menu.id">
             <MenuItem :menu="menu" :parent-path="activeTopMenu?.fullPath || ''" />
           </template>
         </el-menu>
       </el-scrollbar>
+      <button class="aside-profile" :title="collapsed ? '个人资料' : undefined" @click="handleCommand('profile')">
+        <el-icon class="aside-profile-icon"><User /></el-icon>
+        <span class="aside-profile-copy"><strong>个人资料</strong><small>{{ userStore.nickname }}</small></span>
+        <el-icon class="aside-profile-arrow"><ArrowRight /></el-icon>
+      </button>
     </el-aside>
 
     <el-container>
       <el-header class="admin-header">
         <div class="header-top">
           <div class="header-left">
-            <el-button class="icon-button" text @click="collapsed = !collapsed">
+            <el-button class="icon-button nav-collapse" text :aria-label="collapsed ? '展开导航' : '收起导航'" :aria-expanded="!collapsed" @click="collapsed = !collapsed">
               <el-icon :size="20">
                 <Fold v-if="!collapsed" />
                 <Expand v-else />
               </el-icon>
             </el-button>
+            <span class="header-divider" aria-hidden="true"></span>
             <div class="top-menu-wrap">
               <el-menu
+                v-if="!isCompact"
                 :default-active="activeTopKey"
                 class="top-menu"
                 mode="horizontal"
@@ -48,6 +65,19 @@
                   <template #title>{{ menu.menuName }}</template>
                 </el-menu-item>
               </el-menu>
+              <el-dropdown v-else class="compact-module-menu" @command="handleTopSelect">
+                <button class="compact-module-trigger" aria-label="切换导航模块">
+                  <span>{{ activeTopMenu?.menuName || '工作空间' }}</span>
+                  <el-icon><ArrowDown /></el-icon>
+                </button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item v-for="menu in topMenus" :key="menu.topKey" :command="menu.topKey">
+                      {{ menu.menuName }}
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
             </div>
           </div>
           <div class="header-right">
@@ -55,6 +85,7 @@
               class="icon-button theme-toggle"
               text
               :title="isDark ? '切换到日间模式' : '切换到黑暗模式'"
+              :aria-label="isDark ? '切换到日间模式' : '切换到黑暗模式'"
               @click="toggleTheme"
             >
               <el-icon :size="18">
@@ -62,12 +93,12 @@
                 <Moon v-else />
               </el-icon>
             </el-button>
-            <el-dropdown @command="handleCommand">
-              <button class="user-entry">
-                <el-avatar v-if="userStore.avatar" :size="28" :src="userStore.avatar" />
+            <el-dropdown popper-class="nav-user-dropdown" @command="handleCommand">
+              <button class="user-entry" aria-label="打开账号菜单">
+                <el-avatar v-if="userStore.avatar" :size="34" :src="userStore.avatar" />
                 <span v-else class="user-letter">{{ userStore.nickname.slice(0, 1).toUpperCase() }}</span>
-                <strong>{{ userStore.nickname }}</strong>
-                <el-icon><ArrowDown /></el-icon>
+                <span class="user-info"><strong>{{ userStore.nickname }}</strong><small>个人账号</small></span>
+                <el-icon class="user-chevron"><ArrowDown /></el-icon>
               </button>
               <template #dropdown>
                 <el-dropdown-menu>
@@ -88,10 +119,11 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowDown,
+  ArrowRight,
   DataBoard,
   Expand,
   Fold,
@@ -112,8 +144,21 @@ import TagsView from './TagsView.vue'
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
-const collapsed = ref(false)
+const compactQuery = window.matchMedia('(max-width: 760px)')
+const isCompact = ref(compactQuery.matches)
+const collapsed = ref(compactQuery.matches)
 const activeMenu = computed(() => route.path)
+
+function onViewportChange(event) {
+  isCompact.value = event.matches
+  if (event.matches) collapsed.value = true
+}
+onMounted(() => compactQuery.addEventListener('change', onViewportChange))
+onUnmounted(() => compactQuery.removeEventListener('change', onViewportChange))
+
+function onSideSelect() {
+  if (isCompact.value) collapsed.value = true
+}
 
 const isDark = ref(localStorage.getItem('app-theme') === 'dark')
 document.documentElement.classList.toggle('dark', isDark.value)
@@ -151,6 +196,7 @@ const activeSideMenus = computed(() => {
 })
 
 async function handleCommand(command) {
+  if (isCompact.value) collapsed.value = true
   if (command === 'profile') {
     router.push('/profile')
   } else if (command === 'logout') {

@@ -351,6 +351,7 @@ async function copyText(text, label) {
   gap: 24px;
   padding-bottom: 24px;
   color: var(--text-main);
+  background: var(--bg-surface);
 }
 
 /* ==================== 顶部极光横幅 (Hero Banner) ==================== */
@@ -818,13 +819,13 @@ async function copyText(text, label) {
   font-size: 13px;
   letter-spacing: 0.3px;
   padding: 14px 0;
-  background-color: #f8fafc !important;
-  border-bottom: 1px solid #e2e8f0;
+  background-color: var(--el-table-header-bg-color) !important;
+  border-bottom: 1px solid var(--el-table-border-color);
 }
 
 .modern-table :deep(td.el-table__cell) {
   padding: 14px 0;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--el-table-border-color);
 }
 
 .menu-name-cell {
@@ -929,10 +930,7 @@ async function copyText(text, label) {
     width: 100%;
   }
 }
-</style>
 
-<style>
-/* ==================== 运营看板 · 暗色模式适配 ==================== */
 html.dark .dashboard-page {
   --bg-surface: #171d2f;
   --text-main: #e5eaf6;
@@ -940,7 +938,10 @@ html.dark .dashboard-page {
   --text-muted: #6b7a99;
   --border-subtle: #2a3452;
 }
+</style>
 
+<style>
+/* ==================== 运营看板 · 暗色模式适配（属性覆盖） ==================== */
 html.dark .dashboard-page .stat-card {
   box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.3);
 }
