@@ -5,7 +5,7 @@ import com.example.common.utils.IpUtils;
 import com.example.common.utils.SecurityUtils;
 import com.example.system.domain.entity.SysOperLog;
 import com.example.system.log.event.OperLogEvent;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.system.log.AuditSanitizer;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ import java.util.List;
 public class LogAspect {
 
     private final ApplicationEventPublisher eventPublisher;
-    private final ObjectMapper objectMapper;
+    private final AuditSanitizer auditSanitizer;
 
     @Around("@annotation(controllerLog)")
     public Object doAround(ProceedingJoinPoint joinPoint, Log controllerLog) throws Throwable {
@@ -75,8 +75,12 @@ public class LogAspect {
         try {
             result = joinPoint.proceed();
             if (controllerLog.isSaveResponseData() && result != null) {
-                String resultJson = objectMapper.writeValueAsString(result);
-                operLog.setJsonResult(truncate(resultJson, 2000));
+                try {
+                    String resultJson = auditSanitizer.toJson(result);
+                    operLog.setJsonResult(truncate(resultJson, 2000));
+                } catch (Exception ignored) {
+                    operLog.setJsonResult(null);
+                }
             }
         } catch (Throwable e) {
             operLog.setStatus(0);
@@ -101,10 +105,10 @@ public class LogAspect {
             validArgs.add(arg);
         }
         try {
-            String params = objectMapper.writeValueAsString(validArgs);
+            String params = auditSanitizer.toJson(validArgs);
             operLog.setOperParam(truncate(params, 2000));
         } catch (Exception e) {
-            log.warn("序列化请求参数异常: {}", e.getMessage());
+            log.warn("审计请求参数序列化失败，已省略参数");
         }
     }
 

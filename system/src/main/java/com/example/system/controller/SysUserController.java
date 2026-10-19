@@ -45,7 +45,7 @@ public class SysUserController {
     }
 
     @PutMapping("/password")
-    @Log(title = "修改密码", businessType = BusinessType.UPDATE)
+    @Log(title = "修改密码", businessType = BusinessType.UPDATE, isSaveRequestData = false)
     public Result<Void> changePassword(@Valid @RequestBody PasswordUpdateDTO dto) {
         userService.changePassword(dto);
         return Result.success();

@@ -37,7 +37,7 @@ public class AuthController {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
         LoginUser loginUser = (LoginUser) authentication.getPrincipal();
-        String token = tokenProvider.createToken(loginUser.getUserId(), loginUser.getUsername());
+        String token = tokenProvider.createToken(loginUser.getUserId(), loginUser.getUsername(), loginUser.getPassword());
         stringRedisTemplate.opsForValue().set(
                 CacheConstants.LOGIN_TOKEN_KEY + token,
                 loginUser.getUsername(),

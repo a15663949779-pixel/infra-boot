@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.framework.file.config.FileProperties;
 import com.example.framework.file.manager.FileStorageManager;
+import com.example.framework.file.manager.FileLifecycleCoordinator;
+import com.example.framework.security.PermissionService;
+import org.springframework.security.access.AccessDeniedException;
 import com.example.system.domain.dto.CleanupLogQueryDTO;
 import com.example.system.domain.entity.SysFile;
 import com.example.system.domain.entity.SysFileCleanupLog;
@@ -14,10 +17,14 @@ import com.example.system.service.FileCleanupService;
 import com.example.system.service.SysFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.Files;
 import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,22 +39,36 @@ public class FileCleanupServiceImpl implements FileCleanupService {
     private final SysFileCleanupLogMapper cleanupLogMapper;
     private final FileStorageManager fileStorageManager;
     private final FileProperties fileProperties;
+    private final FileLifecycleCoordinator lifecycle;
+    private final PermissionService permissionService;
 
     public FileCleanupServiceImpl(SysFileService sysFileService,
                                   SysFileMapper sysFileMapper,
                                   SysFileCleanupLogMapper cleanupLogMapper,
                                   FileStorageManager fileStorageManager,
-                                  FileProperties fileProperties) {
+                                  FileProperties fileProperties,
+                                  FileLifecycleCoordinator lifecycle,
+                                  PermissionService permissionService) {
         this.sysFileService = sysFileService;
         this.sysFileMapper = sysFileMapper;
         this.cleanupLogMapper = cleanupLogMapper;
         this.fileStorageManager = fileStorageManager;
         this.fileProperties = fileProperties;
+        this.lifecycle = lifecycle;
+        this.permissionService = permissionService;
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void cleanupUploadingTimeout(String mode) {
+        authorizeManual(mode);
+        try (var task = lifecycle.tryLockCleanup()) {
+            if (task == null) return;
+            doCleanupUploadingTimeout(mode);
+        }
+    }
+
+    private void doCleanupUploadingTimeout(String mode) {
         long startTime = System.currentTimeMillis();
         FileProperties.CleanupProperties cleanup = fileProperties.getCleanup();
         int timeoutMinutes = cleanup.getUploadingTimeoutMinutes();
@@ -68,7 +89,13 @@ public class FileCleanupServiceImpl implements FileCleanupService {
         StringBuilder detailBuilder = new StringBuilder("[");
 
         for (SysFile file : timeoutFiles) {
-            try {
+            try (var lease = lifecycle.tryLockFile(file.getFilePath())) {
+                if (lease == null) continue;
+                // This read must run outside a repeatable-read transaction: an upload may just have committed.
+                SysFile current = sysFileMapper.selectById(file.getFileId());
+                if (current == null || !Objects.equals(current.getUploadStatus(), 0)
+                        || current.getCreateTime() == null || !current.getCreateTime().isBefore(timeoutThreshold)
+                        || !current.getCreateTime().isBefore(excludeThreshold)) continue;
                 fileStorageManager.deleteLocal(file.getFilePath());
                 fileStorageManager.deleteRemote(file.getFilePath());
                 sysFileService.removeById(file.getFileId());
@@ -93,11 +120,21 @@ public class FileCleanupServiceImpl implements FileCleanupService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void cleanupOrphanFiles(String mode) {
+        authorizeManual(mode);
+        try (var task = lifecycle.tryLockCleanup()) {
+            if (task == null) return;
+            doCleanupOrphanFiles(mode);
+        }
+    }
+
+    private void doCleanupOrphanFiles(String mode) {
         long startTime = System.currentTimeMillis();
         int totalCleaned = 0;
         int totalFailed = 0;
         StringBuilder detailBuilder = new StringBuilder("[");
+        Instant cutoff = Instant.now().minus(Math.max(1, fileProperties.getCleanup().getExcludeRecentMinutes()), ChronoUnit.MINUTES);
 
         try {
             List<String> diskFiles = fileStorageManager.scanLocalFiles();
@@ -118,7 +155,13 @@ public class FileCleanupServiceImpl implements FileCleanupService {
             int totalScanned = orphanFiles.size();
 
             for (String orphanPath : orphanFiles) {
-                try {
+                try (var lease = lifecycle.tryLockFile(orphanPath)) {
+                    if (lease == null) continue;
+                    var localPath = fileStorageManager.getLocalPath(orphanPath);
+                    if (!Files.exists(localPath) || !Files.getLastModifiedTime(localPath).toInstant().isBefore(cutoff)) continue;
+                    Long references = sysFileMapper.selectCount(new LambdaQueryWrapper<SysFile>()
+                            .eq(SysFile::getFilePath, orphanPath));
+                    if (references > 0) continue;
                     fileStorageManager.deleteLocal(orphanPath);
                     totalCleaned++;
                     if (detailBuilder.length() > 1) {
@@ -148,6 +191,9 @@ public class FileCleanupServiceImpl implements FileCleanupService {
 
     @Override
     public Page<SysFileCleanupLogVO> listCleanupLogs(CleanupLogQueryDTO queryDTO) {
+        if (!permissionService.hasPermi("system:file:cleanup")) {
+            throw new AccessDeniedException("没有文件清理权限");
+        }
         Page<SysFileCleanupLog> page = new Page<>(queryDTO.getPageNum(), queryDTO.getPageSize());
         LambdaQueryWrapper<SysFileCleanupLog> wrapper = new LambdaQueryWrapper<>();
 
@@ -203,5 +249,11 @@ public class FileCleanupServiceImpl implements FileCleanupService {
         vo.setErrorMessage(logEntity.getErrorMessage());
         vo.setCreateTime(logEntity.getCreateTime());
         return vo;
+    }
+
+    private void authorizeManual(String mode) {
+        if (!"AUTO".equals(mode) && !permissionService.hasPermi("system:file:cleanup")) {
+            throw new AccessDeniedException("没有文件清理权限");
+        }
     }
 }

@@ -9,6 +9,7 @@ import com.example.system.domain.entity.SysMenu;
 import com.example.system.domain.vo.MenuTreeVO;
 import com.example.system.mapper.SysMenuMapper;
 import com.example.system.service.SysMenuService;
+import com.example.system.security.AuthorizationScope;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,8 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> implements SysMenuService {
+
+    private final AuthorizationScope authorizationScope;
 
     @Override
     public List<MenuTreeVO> getCurrentUserMenuTree() {
@@ -56,8 +59,9 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveMenu(MenuSaveDTO dto) {
+        authorizationScope.checkPermission(dto.getPerms());
         SysMenu menu = new SysMenu();
-        BeanUtils.copyProperties(dto, menu);
+        BeanUtils.copyProperties(dto, menu, "id");
         menu.setParentId(dto.getParentId() == null ? 0L : dto.getParentId());
         menu.setMenuType(dto.getMenuType() == null ? 0 : dto.getMenuType());
         menu.setVisible(dto.getVisible() == null ? 1 : dto.getVisible());
@@ -69,6 +73,8 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateMenu(MenuSaveDTO dto) {
+        authorizationScope.checkMenus(List.of(dto.getId()));
+        authorizationScope.checkPermission(dto.getPerms());
         SysMenu existing = getById(dto.getId());
         if (existing == null) {
             throw new BusinessException("菜单不存在");
@@ -84,6 +90,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteMenu(Long id) {
+        authorizationScope.checkMenus(List.of(id));
         removeById(id);
     }
 }

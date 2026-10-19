@@ -25,8 +25,10 @@ public class FileWebMvcConfig implements WebMvcConfigurer {
             accessPrefix += "/";
         }
         Path basePath = Paths.get(fileProperties.getBasePath()).toAbsolutePath().normalize();
-        String baseLocation = basePath.toUri().toString();
-        registry.addResourceHandler(accessPrefix + "**")
+        // Only validated avatars are public. Attachments use the authenticated download API.
+        String baseLocation = basePath.resolve("avatar").toUri().toString();
+        if (!baseLocation.endsWith("/")) baseLocation += "/";
+        registry.addResourceHandler(accessPrefix + "avatar/**")
                 .addResourceLocations(baseLocation);
     }
 }

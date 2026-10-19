@@ -3,6 +3,8 @@ package com.example.framework.security;
 import com.example.common.core.CacheConstants;
 import com.example.common.security.LoginUser;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Claims;
+import org.springframework.security.core.AuthenticationException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,13 +43,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     filterChain.doFilter(request, response);
                     return;
                 }
-                String username = tokenProvider.getUsername(token);
+                Claims claims = tokenProvider.parseClaims(token);
+                String username = claims.getSubject();
                 LoginUser loginUser = (LoginUser) userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication =
+                if (tokenProvider.matchesUser(claims, loginUser)) {
+                    UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } catch (JwtException | IllegalArgumentException ex) {
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    stringRedisTemplate.delete(CacheConstants.LOGIN_TOKEN_KEY + token);
+                }
+            } catch (JwtException | IllegalArgumentException | AuthenticationException ex) {
                 log.debug("Invalid JWT token: {}", ex.getMessage());
             }
         }

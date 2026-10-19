@@ -14,6 +14,7 @@ import com.example.system.mapper.SysRoleMapper;
 import com.example.system.mapper.SysRoleMenuMapper;
 import com.example.system.mapper.SysUserRoleMapper;
 import com.example.system.service.SysRoleService;
+import com.example.system.security.AuthorizationScope;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
 
     private final SysRoleMenuMapper roleMenuMapper;
     private final SysUserRoleMapper userRoleMapper;
+    private final AuthorizationScope authorizationScope;
 
     @Override
     public List<Long> getMenuIds(Long roleId) {
@@ -53,8 +55,10 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveRole(RoleSaveDTO dto) {
+        authorizationScope.checkRoleKey(dto.getRoleKey());
+        authorizationScope.checkMenus(dto.getMenuIds());
         SysRole role = new SysRole();
-        BeanUtils.copyProperties(dto, role);
+        BeanUtils.copyProperties(dto, role, "id");
         role.setStatus(dto.getStatus() == null ? 1 : dto.getStatus());
         save(role);
         saveRoleMenus(role.getId(), dto.getMenuIds());
@@ -63,9 +67,16 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateRole(RoleSaveDTO dto) {
+        authorizationScope.checkRole(dto.getId());
+        authorizationScope.checkRoleKey(dto.getRoleKey());
+        authorizationScope.checkMenus(dto.getMenuIds());
         SysRole role = getById(dto.getId());
         if (role == null) {
             throw new BusinessException("角色不存在");
+        }
+        if (Long.valueOf(1L).equals(dto.getId()) && (!Integer.valueOf(1).equals(dto.getStatus())
+                || !"admin".equals(dto.getRoleKey()))) {
+            throw new org.springframework.security.access.AccessDeniedException("不能禁用或重命名管理员角色");
         }
         BeanUtils.copyProperties(dto, role);
         updateById(role);
@@ -75,6 +86,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteRole(Long id) {
+        authorizationScope.checkDeleteRole(id);
         removeById(id);
         roleMenuMapper.delete(new LambdaQueryWrapper<SysRoleMenu>().eq(SysRoleMenu::getRoleId, id));
         userRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId, id));

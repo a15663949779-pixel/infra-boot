@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.system.domain.entity.SysOperLog;
 import com.example.system.mapper.SysOperLogMapper;
 import com.example.system.service.SysOperLogService;
+import com.example.system.log.AuditSanitizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,9 +25,12 @@ public class SysOperLogServiceImpl extends ServiceImpl<SysOperLogMapper, SysOper
         implements SysOperLogService {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private final AuditSanitizer auditSanitizer;
 
     @Override
     public void addLog(SysOperLog operLog) {
+        operLog.setOperParam(auditSanitizer.sanitizeStoredJson(operLog.getOperParam()));
+        operLog.setJsonResult(auditSanitizer.sanitizeStoredJson(operLog.getJsonResult()));
         save(operLog);
     }
 
@@ -50,7 +54,12 @@ public class SysOperLogServiceImpl extends ServiceImpl<SysOperLogMapper, SysOper
         }
 
         wrapper.orderByDesc(SysOperLog::getOperTime);
-        return page(new Page<>(pageNum, pageSize), wrapper);
+        Page<SysOperLog> result = page(new Page<>(pageNum, pageSize), wrapper);
+        result.getRecords().forEach(entry -> {
+            entry.setOperParam(auditSanitizer.sanitizeStoredJson(entry.getOperParam()));
+            entry.setJsonResult(auditSanitizer.sanitizeStoredJson(entry.getJsonResult()));
+        });
+        return result;
     }
 
     @Override

@@ -13,6 +13,8 @@ import java.util.List;
 
 public interface SysFileService extends IService<SysFile> {
 
+    void validateAvatar(Long fileId);
+
     /**
      * 单文件上传
      */

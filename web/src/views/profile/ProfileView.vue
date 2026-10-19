@@ -102,8 +102,10 @@ import { User, Lock, Message, Phone } from '@element-plus/icons-vue'
 import request from '../../api/request'
 import { updateProfile, changePassword } from '../../api/auth'
 import { useUserStore } from '../../stores/user'
+import { useRouter } from 'vue-router'
 
 const userStore = useUserStore()
+const router = useRouter()
 const formRef = ref(null)
 const pwdFormRef = ref(null)
 const saving = ref(false)
@@ -235,8 +237,10 @@ async function handleChangePassword() {
       oldPassword: pwdForm.oldPassword,
       newPassword: pwdForm.newPassword
     })
-    ElMessage.success('密码修改成功')
+    ElMessage.success('密码修改成功，请重新登录')
     resetPwdForm()
+    userStore.reset()
+    await router.replace('/login')
   } finally {
     pwdSaving.value = false
   }

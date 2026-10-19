@@ -20,6 +20,7 @@ import com.example.system.mapper.SysUserMapper;
 import com.example.system.mapper.SysUserRoleMapper;
 import com.example.system.service.SysFileService;
 import com.example.system.service.SysUserService;
+import com.example.system.security.AuthorizationScope;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,6 +39,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     private final SysFileMapper sysFileMapper;
     private final SysFileService sysFileService;
     private final PasswordEncoder passwordEncoder;
+    private final AuthorizationScope authorizationScope;
 
     @Override
     public SysUser getByUsername(String username) {
@@ -94,6 +96,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateProfile(ProfileUpdateDTO dto) {
         LoginUser loginUser = SecurityUtils.getLoginUser();
         if (loginUser == null) {
@@ -113,10 +116,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             user.setPhone(dto.getPhone());
         }
         if (dto.getAvatar() != null) {
+            sysFileService.validateAvatar(dto.getAvatar());
             Long oldAvatarId = user.getAvatar();
             user.setAvatar(dto.getAvatar());
             if (oldAvatarId != null && !oldAvatarId.equals(dto.getAvatar())) {
-                sysFileService.deleteByIds(List.of(oldAvatarId));
+                SysFile oldAvatar = sysFileMapper.selectById(oldAvatarId);
+                // Unknown historical ownership must never grant permission to delete another resource.
+                if (oldAvatar != null && loginUser.getUserId().equals(oldAvatar.getOwnerId())) {
+                    // Metadata joins the profile transaction; physical deletion happens after commit.
+                    sysFileService.deleteByIds(List.of(oldAvatarId));
+                }
             }
         }
         updateById(user);
@@ -155,11 +164,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveUser(UserSaveDTO dto) {
+        authorizationScope.checkAssignableRoles(dto.getRoleIds());
         if (getByUsername(dto.getUsername()) != null) {
             throw new BusinessException("用户名已存在");
         }
         SysUser user = new SysUser();
-        BeanUtils.copyProperties(dto, user);
+        BeanUtils.copyProperties(dto, user, "id", "password");
         user.setStatus(dto.getStatus() == null ? 1 : dto.getStatus());
         user.setPassword(passwordEncoder.encode(StringUtils.hasText(dto.getPassword()) ? dto.getPassword() : "123456"));
         save(user);
@@ -169,6 +179,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateUser(UserSaveDTO dto) {
+        authorizationScope.checkUser(dto.getId(), false);
+        authorizationScope.checkAssignableRoles(dto.getRoleIds());
+        if (Long.valueOf(1L).equals(dto.getId()) && (!Integer.valueOf(1).equals(dto.getStatus())
+                || dto.getRoleIds() == null || !dto.getRoleIds().contains(1L))) {
+            throw new org.springframework.security.access.AccessDeniedException("不能禁用超级管理员或移除其管理员角色");
+        }
         SysUser user = getById(dto.getId());
         if (user == null) {
             throw new BusinessException("用户不存在");
@@ -177,7 +193,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (sameName != null && !sameName.getId().equals(dto.getId())) {
             throw new BusinessException("用户名已存在");
         }
-        BeanUtils.copyProperties(dto, user);
+        BeanUtils.copyProperties(dto, user, "id", "password");
         if (StringUtils.hasText(dto.getPassword())) {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
@@ -188,6 +204,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteUser(Long id) {
+        authorizationScope.checkUser(id, true);
         removeById(id);
         userRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, id));
     }

@@ -42,6 +42,8 @@ public class SysFile extends BaseEntity {
 
     private String businessType;
 
+    private Long ownerId;
+
     @TableField(exist = false)
     private String createBy;
 

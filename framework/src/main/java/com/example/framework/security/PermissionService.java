@@ -3,7 +3,6 @@ package com.example.framework.security;
 import com.example.common.security.LoginUser;
 import com.example.common.utils.SecurityUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -23,17 +22,17 @@ public class PermissionService {
         }
 
         LoginUser loginUser = SecurityUtils.getLoginUser();
-        if (loginUser == null || CollectionUtils.isEmpty(loginUser.getPermissions())) {
+        if (loginUser == null) {
             return false;
         }
 
         // 超级管理员直接放行
         if (isSuperAdmin(loginUser)
-                || loginUser.getPermissions().contains(ALL_PERMISSION)) {
+                || (loginUser.getPermissions() != null && loginUser.getPermissions().contains(ALL_PERMISSION))) {
             return true;
         }
 
-        return loginUser.getPermissions().contains(permission.trim());
+        return loginUser.getPermissions() != null && loginUser.getPermissions().contains(permission.trim());
     }
 
     private boolean isSuperAdmin(LoginUser loginUser) {

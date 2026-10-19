@@ -17,6 +17,7 @@ CREATE TABLE `sys_file` (
   `remote_sync_status` TINYINT(1)   DEFAULT 0                COMMENT '远程同步状态 (0:无需/未同步, 1:同步成功, 2:同步失败)',
   `upload_status`      TINYINT(1)   DEFAULT 0                COMMENT '上传状态 (0:上传中, 1:已完成, 2:上传失败)',
   `business_type`      VARCHAR(50)  DEFAULT 'default'        COMMENT '业务模块标识 (如: avatar, document)',
+  `owner_id`           BIGINT       DEFAULT NULL            COMMENT '上传用户ID，历史归属未知的文件仅管理员可操作',
   `deleted`            INT(1)       DEFAULT 0                COMMENT '逻辑删除标志 (0正常 1已删除)',
   `create_by`          VARCHAR(64)  DEFAULT ''               COMMENT '上传人用户名',
   `create_time`        DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '上传创建时间',
@@ -26,6 +27,7 @@ CREATE TABLE `sys_file` (
   PRIMARY KEY (`file_id`),
   KEY `idx_file_md5` (`file_md5`),
   KEY `idx_business_type` (`business_type`),
+  KEY `idx_file_owner_id` (`owner_id`),
   KEY `idx_create_time` (`create_time`),
   KEY `idx_upload_status` (`upload_status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文件元数据记录表';

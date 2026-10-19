@@ -72,17 +72,10 @@ public class FileStorageManager {
      * @return 本地物理文件绝对路径
      */
     public Path saveToLocal(String relativePath, InputStream inputStream) {
-        Path basePath = Paths.get(properties.getBasePath()).toAbsolutePath().normalize();
-        Path targetPath = basePath.resolve(relativePath).normalize();
-
-        // 防止路径穿越
-        if (!targetPath.startsWith(basePath)) {
-            throw new BusinessException("非法的文件路径");
-        }
-
-        try {
+        try (InputStream input = inputStream) {
+            Path targetPath = getLocalPath(relativePath);
             Files.createDirectories(targetPath.getParent());
-            Files.copy(inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(input, targetPath, StandardCopyOption.REPLACE_EXISTING);
             return targetPath;
         } catch (IOException e) {
             log.error("文件保存失败: {}", relativePath, e);
@@ -100,8 +93,9 @@ public class FileStorageManager {
         try {
             Path localPath = getLocalPath(relativePath);
             if (Files.exists(localPath)) {
-                InputStream inputStream = Files.newInputStream(localPath);
-                return remoteClient.upload(relativePath, inputStream);
+                try (InputStream inputStream = Files.newInputStream(localPath)) {
+                    return remoteClient.upload(relativePath, inputStream);
+                }
             }
         } catch (IOException e) {
             log.error("远程同步失败: {}", relativePath, e);
@@ -143,6 +137,7 @@ public class FileStorageManager {
             }
         } catch (IOException e) {
             log.error("删除本地文件失败: {}", relativePath, e);
+            throw new BusinessException("删除本地文件失败");
         }
     }
 
@@ -159,7 +154,12 @@ public class FileStorageManager {
      * 获取本地物理文件绝对路径
      */
     public Path getLocalPath(String relativePath) {
-        return Paths.get(properties.getBasePath()).toAbsolutePath().normalize().resolve(relativePath).normalize();
+        Path base = getBasePath();
+        Path target = base.resolve(relativePath).normalize();
+        if (!target.startsWith(base) || target.startsWith(base.resolve(".locks"))) {
+            throw new BusinessException("非法的文件路径");
+        }
+        return target;
     }
 
     /**
@@ -187,6 +187,7 @@ public class FileStorageManager {
         }
         try (Stream<Path> stream = Files.walk(basePath)) {
             stream.filter(Files::isRegularFile)
+                    .filter(path -> !path.startsWith(basePath.resolve(".locks")))
                     .forEach(path -> relativePaths.add(basePath.relativize(path).toString().replace('\\', '/')));
         } catch (IOException e) {
             log.error("扫描本地文件失败", e);

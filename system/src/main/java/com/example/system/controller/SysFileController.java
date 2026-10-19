@@ -13,6 +13,7 @@ import com.example.system.service.FileCleanupService;
 import com.example.system.service.SysFileService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -30,6 +31,7 @@ public class SysFileController {
     }
 
     @PostMapping("/upload")
+    @PreAuthorize("@ss.hasPermi('system:file:upload') or #businessType == 'avatar'")
     public Result<FileUploadVO> upload(
             @RequestPart("file") MultipartFile file,
             @RequestParam(value = "businessType", defaultValue = "default") String businessType) {
@@ -38,6 +40,7 @@ public class SysFileController {
     }
 
     @PostMapping("/upload/batch")
+    @PreAuthorize("@ss.hasPermi('system:file:upload')")
     public Result<List<FileUploadVO>> uploadBatch(
             @RequestPart("files") List<MultipartFile> files,
             @RequestParam(value = "businessType", defaultValue = "default") String businessType) {
@@ -60,6 +63,7 @@ public class SysFileController {
     }
 
     @GetMapping("/list")
+    @PreAuthorize("@ss.hasPermi('system:file:list')")
     public Result<Page<SysFileVO>> list(FileQueryDTO queryDTO) {
         Page<SysFileVO> page = sysFileService.list(queryDTO);
         return Result.success(page);
@@ -72,18 +76,23 @@ public class SysFileController {
     }
 
     @PostMapping("/cleanup/timeout")
+    @PreAuthorize("@ss.hasPermi('system:file:cleanup')")
+    @Log(title = "上传超时清理", businessType = BusinessType.CLEAN)
     public Result<Void> manualCleanupTimeout() {
         fileCleanupService.cleanupUploadingTimeout("MANUAL");
         return Result.success();
     }
 
     @PostMapping("/cleanup/orphan")
+    @PreAuthorize("@ss.hasPermi('system:file:cleanup')")
+    @Log(title = "孤儿文件清理", businessType = BusinessType.CLEAN)
     public Result<Void> manualCleanupOrphan() {
         fileCleanupService.cleanupOrphanFiles("MANUAL");
         return Result.success();
     }
 
     @GetMapping("/cleanup/logs")
+    @PreAuthorize("@ss.hasPermi('system:file:cleanup')")
     public Result<Page<SysFileCleanupLogVO>> cleanupLogs(CleanupLogQueryDTO queryDTO) {
         Page<SysFileCleanupLogVO> page = fileCleanupService.listCleanupLogs(queryDTO);
         return Result.success(page);
